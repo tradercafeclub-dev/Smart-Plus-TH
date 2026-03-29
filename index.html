@@ -858,44 +858,45 @@ function closeConfig(){ qs('cfg-modal').classList.remove('open'); }
 qs('cfg-modal').addEventListener('click', e => { if(e.target===qs('cfg-modal')) closeConfig(); });
 
 /* ================================================
-   NocoDB API
+   NocoDB API (ใช้ Members Table เป็น Auth หลัก)
 ================================================ */
+
+/* --- Simple password hash (SHA-256 via Web Crypto) --- */
+async function hashPass(pass){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
 const API = {
-  hdrs(auth=true){
-    const h = { 'Content-Type':'application/json', 'xc-token': CFG.token };
-    if(auth && AUTH.token) h['xc-auth'] = AUTH.token;
-    return h;
+  hdrs(){
+    return { 'Content-Type':'application/json', 'xc-token': CFG.token };
   },
   async req(method, path, body=null){
     if(!CFG.url){ toast('กรุณาตั้งค่า NocoDB URL ก่อน','error'); openConfig(); throw new Error('no url'); }
     const opts = { method, headers: this.hdrs() };
     if(body) opts.body = JSON.stringify(body);
     const r = await fetch(CFG.url + path, opts);
-    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.msg||`HTTP ${r.status}`); }
+    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.msg||e.message||`HTTP ${r.status}`); }
     return r.json();
   },
-  /* Auth */
-  login(email,password){ return this.req('POST','/api/v1/auth/user/signin',{email,password}); },
-  register(email,password){ return this.req('POST','/api/v1/auth/user/signup',{email,password}); },
-  /* Members Table */
-  createMember(data){ return this.req('POST',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}`,data); },
-  findMember(email){
+  /* Members Table CRUD */
+  findMemberByEmail(email){
     const q = new URLSearchParams({where:`(email,eq,${email})`,limit:1}).toString();
     return this.req('GET',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}?${q}`);
   },
+  createMember(data){ return this.req('POST',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}`,data); },
   updateMember(id,data){ return this.req('PATCH',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}/${id}`,data); },
-  me(){ return this.req('GET','/api/v1/auth/user/me'); },
   /* Data */
   list(tbl, p={}){
-    const qs = new URLSearchParams(p).toString();
-    return this.req('GET',`/api/v1/db/data/noco/${CFG.base}/${tbl}?${qs}`);
+    const q = new URLSearchParams(p).toString();
+    return this.req('GET',`/api/v1/db/data/noco/${CFG.base}/${tbl}?${q}`);
   },
   create(tbl,data){ return this.req('POST',`/api/v1/db/data/noco/${CFG.base}/${tbl}`,data); },
   count(tbl){ return this.req('GET',`/api/v1/db/data/noco/${CFG.base}/${tbl}/count`); }
 };
 
 /* ================================================
-   AUTH
+   AUTH — ใช้ Members Table โดยตรง (ไม่ผ่าน NocoDB Auth)
 ================================================ */
 const AUTH = { token:null, user:null };
 AUTH.load = function(){
@@ -903,10 +904,12 @@ AUTH.load = function(){
   const u = localStorage.getItem('sp_usr');
   if(u) try{ this.user=JSON.parse(u); }catch{}
 };
-AUTH.save = function(tok, usr){
-  this.token=tok; this.user=usr;
-  localStorage.setItem('sp_tok',tok);
-  localStorage.setItem('sp_usr',JSON.stringify(usr));
+AUTH.save = function(usr){
+  // ใช้ email เป็น session token
+  this.token = usr.email;
+  this.user  = usr;
+  localStorage.setItem('sp_tok', usr.email);
+  localStorage.setItem('sp_usr', JSON.stringify(usr));
 };
 AUTH.clear = function(){
   this.token=null; this.user=null;
@@ -915,31 +918,29 @@ AUTH.clear = function(){
 };
 
 async function doLogin(){
-  const email = qs('l-email').value.trim();
+  const email = qs('l-email').value.trim().toLowerCase();
   const pass  = qs('l-pass').value;
   if(!email||!pass) return toast('กรุณากรอกอีเมลและรหัสผ่าน','error');
   setBtnLoad('login-btn', true);
   try{
-    const r = await API.login(email, pass);
-    if(!r.token) throw new Error('ไม่ได้รับ token');
-    let userData = { email, name: r.user?.display_name || email.split('@')[0] };
-    // ดึงข้อมูลเพิ่มเติมจาก Members table
-    try{
-      const me = await API.me();
-      userData = {...userData, ...me};
-      if(CFG.tbl.members){
-        const found = await API.findMember(email);
-        const member = found?.list?.[0];
-        if(member){
-          userData.display_name = member.name || userData.display_name;
-          userData.phone = member.phone || '';
-          userData.memberId = member.Id || member.id || '';
-          // อัปเดต last_login
-          await API.updateMember(member.Id||member.id, { last_login: new Date().toISOString() }).catch(()=>{});
-        }
-      }
-    }catch{}
-    AUTH.save(r.token, userData);
+    const hashed = await hashPass(pass);
+    const res = await API.findMemberByEmail(email);
+    const member = res?.list?.[0];
+    if(!member) throw new Error('ไม่พบบัญชีนี้ในระบบ');
+    if(member.status === 'suspended') throw new Error('บัญชีถูกระงับ กรุณาติดต่อ Admin');
+    if(member.password_hash !== hashed) throw new Error('รหัสผ่านไม่ถูกต้อง');
+    // อัปเดต last_login
+    await API.updateMember(member.Id||member.id, {
+      last_login: new Date().toISOString(),
+      status: 'active'
+    }).catch(()=>{});
+    AUTH.save({
+      email: member.email,
+      name:  member.name || email.split('@')[0],
+      phone: member.phone||'',
+      role:  member.role||'member',
+      memberId: member.Id||member.id||''
+    });
     afterLogin();
   }catch(e){ toast('เข้าสู่ระบบไม่สำเร็จ: '+e.message,'error'); }
   finally{ setBtnLoad('login-btn', false, 'เข้าสู่ระบบ'); }
@@ -947,63 +948,33 @@ async function doLogin(){
 
 async function doRegister(){
   const name  = qs('r-name').value.trim();
-  const email = qs('r-email').value.trim();
+  const email = qs('r-email').value.trim().toLowerCase();
   const pass  = qs('r-pass').value;
   if(!name||!email||!pass) return toast('กรุณากรอกข้อมูลให้ครบ','error');
   if(pass.length<8) return toast('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร','error');
   if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)) return toast('รูปแบบอีเมลไม่ถูกต้อง','error');
   setBtnLoad('reg-btn', true);
   try{
-    // Step 1: สมัครกับ NocoDB Auth
-    await API.register(email, pass);
-
-    // Step 2: บันทึกข้อมูลสมาชิกลง Members Table (ถ้าตั้งค่าไว้)
-    if(CFG.tbl.members){
-      try{
-        await API.createMember({
-          name: name,
-          email: email,
-          status: 'active',
-          role: 'member',
-          joined_at: new Date().toISOString(),
-          last_login: new Date().toISOString()
-        });
-      }catch(me){ console.warn('Members table save failed:', me.message); }
-    }
-
+    // ตรวจสอบอีเมลซ้ำ
+    const exists = await API.findMemberByEmail(email);
+    if(exists?.list?.length > 0) throw new Error('อีเมลนี้ถูกใช้งานแล้ว');
+    // Hash password ก่อนบันทึก
+    const hashed = await hashPass(pass);
+    await API.createMember({
+      name,
+      email,
+      password_hash: hashed,
+      status:    'active',
+      role:      'member',
+      joined_at: new Date().toISOString(),
+      last_login: new Date().toISOString()
+    });
     toast('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ','success');
     switchTab('login');
     qs('l-email').value = email;
+    qs('l-pass').value  = '';
     qs('l-pass').focus();
-  }catch(e){
-    // NocoDB Cloud อาจปิด signup endpoint — ลอง fallback บันทึกใน Members table อย่างเดียว
-    if(e.message.includes('Not found') || e.message.includes('404')){
-      if(!CFG.tbl.members){
-        toast('กรุณาตั้งค่า Members Table ID ในการตั้งค่าก่อน','error');
-        openConfig();
-        return;
-      }
-      try{
-        // ตรวจสอบว่า email ซ้ำไหม
-        const exists = await API.findMember(email);
-        if(exists?.list?.length > 0){
-          toast('อีเมลนี้ถูกใช้แล้ว','error'); return;
-        }
-        await API.createMember({
-          name, email,
-          password_hint: '(ตั้งรหัสผ่านผ่าน NocoDB Invite)',
-          status: 'pending',
-          role: 'member',
-          joined_at: new Date().toISOString()
-        });
-        toast('บันทึกข้อมูลแล้ว! Admin จะเปิดใช้งานบัญชีให้','success');
-        switchTab('login');
-        qs('l-email').value = email;
-      }catch(e2){ toast('สมัครไม่สำเร็จ: '+e2.message,'error'); }
-    } else {
-      toast('สมัครไม่สำเร็จ: '+e.message,'error');
-    }
-  }
+  }catch(e){ toast('สมัครไม่สำเร็จ: '+e.message,'error'); }
   finally{ setBtnLoad('reg-btn', false, 'สมัครสมาชิก'); }
 }
 
@@ -1555,7 +1526,7 @@ function setBtnLoad(id, loading, label=''){
 document.addEventListener('DOMContentLoaded',()=>{
   loadCFG();
   AUTH.load();
-  if(AUTH.isLoggedIn ? AUTH.isLoggedIn() : !!AUTH.token){
+  if(!!AUTH.token && !!AUTH.user){
     afterLogin();
   } else {
     qs('login-screen').style.display='flex';
