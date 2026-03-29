@@ -801,14 +801,23 @@ a{color:var(--gold);text-decoration:none}
    CONFIG
 ================================================ */
 let CFG = {
-  url:'', token:'', base:'',
-  tbl:{ books:'', chat:'', pay:'' },
+  url: 'https://smartplus.smartplusteam9.workers.dev/', // เปลี่ยนเป็น URL ของ Worker คุณ
+  token: '',   // ไม่ต้องใส่ token — Worker จัดการให้
+  base: 'pbimhqp73ffojky',
+  tbl:{ books:'mnd6xqhpwkbjkuc', chat:'mzsb9sptl4jg132', pay:'mkguyxleqyds81x' },
   gb:{ token:'', bg:'' }
 };
 
 function loadCFG(){
   const s = localStorage.getItem('sp_cfg');
-  if(s){ try{ CFG = JSON.parse(s); }catch{} }
+  if(s){ try{
+    const saved = JSON.parse(s);
+    CFG.url   = saved.url   || CFG.url;
+    CFG.token = saved.token || CFG.token;
+    CFG.base  = saved.base  || CFG.base;
+    if(saved.tbl){ CFG.tbl.books=saved.tbl.books||CFG.tbl.books; CFG.tbl.chat=saved.tbl.chat||CFG.tbl.chat; CFG.tbl.pay=saved.tbl.pay||CFG.tbl.pay; }
+    if(saved.gb){ CFG.gb.token=saved.gb.token||''; CFG.gb.bg=saved.gb.bg||''; }
+  }catch{} }
 }
 function saveCFG(){
   CFG.url    = qs('c-url').value.trim().replace(/\/$/,'');
