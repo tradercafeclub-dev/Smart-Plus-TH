@@ -258,6 +258,162 @@ a{color:var(--gold);text-decoration:none}
 .chat-send svg{width:18px;height:18px}
 
 /* ================================================
+   SUBMISSION FORM (กรอกครั้งเดียว/ล็อคหลังส่ง/อัปโหลดไฟล์)
+================================================ */
+let pendingFiles = []; // [{file, status:'waiting'|'uploading'|'done'|'error', url:''}]
+
+/* Drag & Drop */
+function onDragOver(e){ e.preventDefault(); qs('upload-zone').classList.add('drag'); }
+function onDragLeave(){ qs('upload-zone').classList.remove('drag'); }
+function onDrop(e){
+  e.preventDefault(); qs('upload-zone').classList.remove('drag');
+  addFiles(Array.from(e.dataTransfer.files));
+}
+function onFileSelect(e){ addFiles(Array.from(e.target.files)); e.target.value=''; }
+
+function addFiles(files){
+  const allowed = ['image/jpeg','image/png','image/gif','image/webp','application/pdf'];
+  files.forEach(f=>{
+    if(!allowed.includes(f.type)){ toast(`${f.name}: ไฟล์ประเภทนี้ไม่รองรับ`,'warn'); return; }
+    if(f.size>10*1024*1024){ toast(`${f.name}: ไฟล์ขนาดใหญ่เกิน 10MB`,'warn'); return; }
+    if(pendingFiles.length>=5){ toast('อัปโหลดได้สูงสุด 5 ไฟล์','warn'); return; }
+    pendingFiles.push({file:f, status:'waiting', url:''});
+  });
+  renderQueue();
+}
+
+function removeFile(i){
+  pendingFiles.splice(i,1);
+  renderQueue();
+}
+
+function renderQueue(){
+  const el = qs('upload-queue');
+  if(!pendingFiles.length){ el.innerHTML=''; return; }
+  el.innerHTML = pendingFiles.map((p,i)=>{
+    const icon = p.status==='done'?'✅':p.status==='error'?'❌':p.status==='uploading'?'⏳':'📄';
+    const size = (p.file.size/1024).toFixed(0)+'KB';
+    return `<div class="upload-item">
+      <span class="upload-item-status">${icon}</span>
+      <span class="upload-item-name">${esc(p.file.name)}</span>
+      <span class="upload-item-size">${size}</span>
+      ${p.status==='waiting'?`<button class="upload-remove" onclick="removeFile(${i})">✕</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* โหลดสถานะ — ตรวจว่าส่งแล้วหรือยัง */
+async function loadSubmitPage(){
+  if(!AUTH.user?.email) return;
+  if(!CFG.tbl.submissions){
+    qs('sub-form').innerHTML = '<div class="empty"><span class="ei">⚙️</span><h3>ยังไม่ได้ตั้งค่า Submissions Table</h3><button class="btn btn-outline btn-sm mt-3" onclick="openConfig()">ตั้งค่า</button></div>';
+    qs('sub-done').classList.add('hidden');
+    return;
+  }
+  try{
+    const res = await API.getMySubmission(AUTH.user.email);
+    const sub = res?.list?.[0];
+    if(sub){
+      showDone(sub); // ส่งแล้ว → แสดงสรุป + ล็อค
+    } else {
+      // ยังไม่เคยส่ง → แสดงฟอร์ม
+      qs('sf-name').value  = AUTH.user.name||'';
+      qs('sf-phone').value = AUTH.user.phone||'';
+      qs('sub-done').classList.add('hidden');
+      qs('sub-form').classList.remove('hidden');
+    }
+  }catch(e){
+    qs('sf-name').value  = AUTH.user.name||'';
+    qs('sf-phone').value = AUTH.user.phone||'';
+  }
+  icons();
+}
+
+function showDone(sub){
+  try{
+    const atts = JSON.parse(sub.attachments||'[]');
+    qs('sv-name').textContent  = sub.full_name||'—';
+    qs('sv-phone').textContent = sub.phone||'—';
+    qs('sv-out').textContent   = Number(sub.coins_outside||0).toLocaleString()+' เหรียญ';
+    qs('sv-in').textContent    = Number(sub.coins_inside||0).toLocaleString()+' เหรียญ';
+    qs('sv-smpf').textContent  = Number(sub.coins_smpf||0).toLocaleString()+' เหรียญ';
+    qs('sv-bonus').textContent = Number(sub.coins_bonus||0).toLocaleString()+' เหรียญ';
+    qs('sv-debt').textContent  = '฿'+Number(sub.debt_settlement||0).toLocaleString('th-TH',{minimumFractionDigits:2});
+    qs('sv-docs').textContent  = atts.length ? atts.length+' ไฟล์' : 'ไม่มี';
+    const chip = qs('sub-status-chip');
+    const s = sub.status||'pending';
+    chip.className = 'status-chip '+(s==='approved'?'chip-approved':s==='rejected'?'chip-rejected':'chip-pending');
+    chip.textContent = s==='approved'?'✅ อนุมัติแล้ว':s==='rejected'?'❌ ไม่อนุมัติ':'⏳ รอตรวจสอบ';
+  }catch{}
+  qs('sub-done').classList.remove('hidden');
+  qs('sub-form').classList.add('hidden');
+}
+
+/* ส่งฟอร์ม */
+async function submitForm(){
+  const name  = qs('sf-name').value.trim();
+  const phone = qs('sf-phone').value.trim();
+  const out   = parseFloat(qs('sf-out').value)||0;
+  const inn   = parseFloat(qs('sf-in').value)||0;
+  const smpf  = parseFloat(qs('sf-smpf').value)||0;
+  const bonus = parseFloat(qs('sf-bonus').value)||0;
+  const debt  = parseFloat(qs('sf-debt').value)||0;
+  if(!name||!phone) return toast('กรุณากรอกชื่อและเบอร์โทร','error');
+  if(!CFG.tbl.submissions) return toast('กรุณาตั้งค่า Submissions Table ID ก่อน','error');
+
+  // ยืนยันก่อนส่ง
+  if(!confirm('ยืนยันส่งข้อมูล?\nหลังจากส่งแล้วจะไม่สามารถแก้ไขได้')) return;
+
+  setBtnLoad('sf-btn', true);
+  try{
+    // Step 1: อัปโหลดไฟล์ทั้งหมด
+    const attachments = [];
+    for(let i=0;i<pendingFiles.length;i++){
+      const pf = pendingFiles[i];
+      pf.status = 'uploading';
+      renderQueue();
+      try{
+        const res = await API.uploadFile(pf.file);
+        const uploaded = Array.isArray(res) ? res[0] : res;
+        attachments.push({
+          title: pf.file.name,
+          url:   uploaded.url || uploaded.signedUrl || '',
+          mimetype: pf.file.type,
+          size: pf.file.size
+        });
+        pf.status = 'done';
+      }catch(ue){
+        pf.status = 'error';
+        console.warn('Upload failed:', ue.message);
+        toast(`อัปโหลด ${pf.file.name} ไม่สำเร็จ: ${ue.message}`,'warn');
+      }
+      renderQueue();
+    }
+
+    // Step 2: บันทึกข้อมูลลง Submissions Table
+    await API.createSubmission({
+      member_email:    AUTH.user?.email||'',
+      full_name:       name,
+      phone:           phone,
+      coins_outside:   out,
+      coins_inside:    inn,
+      coins_smpf:      smpf,
+      coins_bonus:     bonus,
+      debt_settlement: debt,
+      attachments:     JSON.stringify(attachments),
+      status:          'pending',
+      submitted_at:    new Date().toISOString()
+    });
+
+    toast('ส่งข้อมูลสำเร็จ!','success');
+    pendingFiles = [];
+    await loadSubmitPage(); // reload → แสดง summary
+  }catch(e){ toast('ส่งไม่สำเร็จ: '+e.message,'error'); }
+  finally{ setBtnLoad('sf-btn', false, 'ยืนยันส่งข้อมูล'); icons(); }
+}
+
+
+/* ================================================
    ANALYTICS
 ================================================ */
 .chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px}
@@ -360,6 +516,39 @@ a{color:var(--gold);text-decoration:none}
 @media(min-width:1200px){
   .ebook-grid{grid-template-columns:repeat(4,1fr)}
 }
+
+/* ================================================
+   SUBMISSION FORM
+================================================ */
+.form-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
+.form-section-title{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.input-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:rgba(201,168,76,.04)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-zone-icon{font-size:28px;margin-bottom:6px}
+.upload-zone-text{font-size:12px;color:var(--text-s)}
+.upload-queue{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.upload-item{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.upload-item-name{flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upload-item-size{font-size:10px;color:var(--text-s);flex-shrink:0}
+.upload-item-status{font-size:11px;flex-shrink:0}
+.upload-remove{background:none;border:none;color:var(--error);cursor:pointer;font-size:15px;padding:0 2px}
+.upload-progress{height:3px;background:var(--gold);border-radius:2px;transition:width .3s;margin-top:4px}
+.sub-summary-box{background:linear-gradient(135deg,#162444,#0d1a35);border:1px solid #253d66;border-radius:16px;padding:22px;margin-bottom:16px}
+.sub-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+.sub-row:last-child{border-bottom:none}
+.sub-label{color:var(--text-s)}
+.sub-value{font-weight:600;text-align:right;max-width:60%}
+.locked-notice{display:flex;align-items:center;gap:8px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--warn);margin-top:12px}
+.status-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700}
+.chip-pending{background:rgba(251,191,36,.12);color:var(--warn)}
+.chip-approved{background:rgba(52,211,153,.12);color:var(--success)}
+.chip-rejected{background:rgba(248,113,113,.12);color:var(--error)}
+.doc-thumb-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.doc-thumb{width:64px;height:64px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
+.doc-thumb img{width:100%;height:100%;object-fit:cover}
+
 </style>
 </head>
 <body>
@@ -456,6 +645,9 @@ a{color:var(--gold);text-decoration:none}
     <div class="nav-item" id="snav-chat" onclick="navigate('chat')" style="position:relative">
       <i data-lucide="message-circle"></i>แชท
       <span class="notif-badge" id="chat-badge">0</span>
+    </div>
+    <div class="nav-item" id="snav-submit" onclick="navigate('submit')">
+      <i data-lucide="clipboard-list"></i>กรอกข้อมูล
     </div>
     <div class="nav-item" id="snav-analytics" onclick="navigate('analytics')">
       <i data-lucide="bar-chart-2"></i>Analytics
@@ -713,6 +905,101 @@ a{color:var(--gold);text-decoration:none}
       </div>
     </div>
 
+
+    <!-- ──── SUBMIT FORM ──── -->
+    <div class="page" id="page-submit">
+      <div class="page-header">
+        <div class="page-title">📋 กรอกข้อมูลเหรียญ</div>
+        <div class="page-sub">บันทึกข้อมูลคะแนน/เหรียญสำหรับการประนอมหนี้</div>
+      </div>
+
+      <!-- สถานะหลังส่งแล้ว (ล็อค) -->
+      <div id="sub-done" class="hidden">
+        <div class="sub-summary-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:14px;font-weight:700;color:var(--gold)">✅ ข้อมูลที่ส่งแล้ว</div>
+            <span id="sub-status-chip" class="status-chip chip-pending">⏳ รอตรวจสอบ</span>
+          </div>
+          <div class="sub-row"><span class="sub-label">ชื่อ-นามสกุล</span><span class="sub-value" id="sv-name">—</span></div>
+          <div class="sub-row"><span class="sub-label">เบอร์โทร</span><span class="sub-value" id="sv-phone">—</span></div>
+          <div class="sub-row"><span class="sub-label">นอกระบบ (คะแนน/เหรียญ)</span><span class="sub-value" id="sv-out">—</span></div>
+          <div class="sub-row"><span class="sub-label">ในระบบ (คะแนน/เหรียญ)</span><span class="sub-value" id="sv-in">—</span></div>
+          <div class="sub-row"><span class="sub-label">SMPF</span><span class="sub-value" id="sv-smpf">—</span></div>
+          <div class="sub-row"><span class="sub-label">SMP Bonus</span><span class="sub-value" id="sv-bonus">—</span></div>
+          <div class="sub-row"><span class="sub-label">ยอดประนอมหนี้</span><span class="sub-value" id="sv-debt">—</span></div>
+          <div class="sub-row"><span class="sub-label">เอกสารแนบ</span><span class="sub-value" id="sv-docs">—</span></div>
+        </div>
+        <div class="locked-notice">
+          🔒 ข้อมูลถูกส่งแล้วและไม่สามารถแก้ไขได้ กรุณาติดต่อ Admin หากต้องการเปลี่ยนแปลง
+        </div>
+      </div>
+
+      <!-- ฟอร์ม (ซ่อนหลังส่งแล้ว) -->
+      <div id="sub-form">
+        <!-- ข้อมูลส่วนตัว -->
+        <div class="form-section">
+          <div class="form-section-title">👤 ข้อมูลส่วนตัว</div>
+          <div class="form-group">
+            <label class="form-label">ชื่อ-นามสกุล <span style="color:var(--error)">*</span></label>
+            <input type="text" id="sf-name" class="form-input" placeholder="กรอกชื่อ-นามสกุลจริง">
+          </div>
+          <div class="form-group">
+            <label class="form-label">เบอร์โทรศัพท์ <span style="color:var(--error)">*</span></label>
+            <input type="tel" id="sf-phone" class="form-input" placeholder="0XX-XXX-XXXX">
+          </div>
+        </div>
+
+        <!-- ข้อมูลเหรียญ -->
+        <div class="form-section">
+          <div class="form-section-title">🪙 ข้อมูลคะแนน/เหรียญ</div>
+          <div class="input-row-2">
+            <div class="form-group">
+              <label class="form-label">จำนวนนอกระบบ (คะแนน/เหรียญ)</label>
+              <input type="number" id="sf-out" class="form-input" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">จำนวนในระบบ (คะแนน/เหรียญ)</label>
+              <input type="number" id="sf-in" class="form-input" placeholder="0" min="0">
+            </div>
+          </div>
+          <div class="input-row-2">
+            <div class="form-group">
+              <label class="form-label">จำนวนเหรียญ SMPF</label>
+              <input type="number" id="sf-smpf" class="form-input" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">จำนวนเหรียญ SMP Bonus</label>
+              <input type="number" id="sf-bonus" class="form-input" placeholder="0" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ยอดประนอมหนี้ (บาท)</label>
+            <input type="number" id="sf-debt" class="form-input" placeholder="0.00" min="0" step="0.01">
+          </div>
+        </div>
+
+        <!-- อัปโหลดเอกสาร -->
+        <div class="form-section">
+          <div class="form-section-title">📎 แนบเอกสาร/ภาพถ่ายหน้าจอ</div>
+          <div class="upload-zone" id="upload-zone" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+            <input type="file" id="sf-files" multiple accept="image/*,.pdf" onchange="onFileSelect(event)">
+            <div class="upload-zone-icon">📁</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">คลิกหรือลากไฟล์มาวางที่นี่</div>
+            <div class="upload-zone-text">รองรับ JPG, PNG, PDF • สูงสุด 5 ไฟล์ • ขนาดไม่เกิน 10MB ต่อไฟล์</div>
+          </div>
+          <div class="upload-queue" id="upload-queue"></div>
+        </div>
+
+        <!-- Submit -->
+        <div style="background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:12px 16px;font-size:12px;color:var(--error);margin-bottom:16px">
+          ⚠️ <strong>สำคัญ:</strong> เมื่อกดส่งข้อมูลแล้วจะไม่สามารถแก้ไขได้ กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนส่ง
+        </div>
+        <button class="btn btn-gold" id="sf-btn" onclick="submitForm()" style="width:100%;padding:14px">
+          <i data-lucide="send"></i> ยืนยันส่งข้อมูล
+        </button>
+      </div>
+    </div>
+
   </div><!-- /content-area -->
 </div><!-- /main-app -->
 
@@ -730,6 +1017,9 @@ a{color:var(--gold);text-decoration:none}
     </div>
     <div class="bnav-item" id="bnav-chat" onclick="navigate('chat')">
       <i data-lucide="message-circle"></i><span>แชท</span>
+    </div>
+    <div class="bnav-item" id="bnav-submit" onclick="navigate('submit')">
+      <i data-lucide="clipboard-list"></i><span>กรอกข้อมูล</span>
     </div>
     <div class="bnav-item" id="bnav-profile" onclick="navigate('profile')">
       <i data-lucide="user"></i><span>โปรไฟล์</span>
@@ -773,8 +1063,12 @@ a{color:var(--gold);text-decoration:none}
       <input type="text" id="c-tbl-pay" class="form-input" placeholder="md_xxxxxxxxxxxxxxxxx">
     </div>
     <div class="form-group">
-      <label class="form-label">Table: Members (ฟิลด์: name, email, phone, status, role, joined_at, last_login) 🔑</label>
-      <input type="text" id="c-tbl-members" class="form-input" placeholder="md_xxxxxxxxxxxxxxxxx">
+      <label class="form-label">Table: Members 🔑 (ฟิลด์: name, email, password_hash, phone, status, role, joined_at, last_login)</label>
+      <input type="text" id="c-tbl-members" class="form-input" placeholder="mxo9vs5ktvm5oup" value="mxo9vs5ktvm5oup">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Table: Submissions 📋 (ฟิลด์: member_email, full_name, phone, coins_outside, coins_inside, coins_smpf, coins_bonus, debt_settlement, attachments, status)</label>
+      <input type="text" id="c-tbl-submissions" class="form-input" placeholder="md_xxxxxxxxxxxxxxxxx">
     </div>
 
     <div class="divider"></div>
@@ -805,37 +1099,33 @@ a{color:var(--gold);text-decoration:none}
    CONFIG
 ================================================ */
 let CFG = {
-  url: 'https://smartplus.smartplusteam9.workers.dev',
+  url:   'https://smartplus.smartplusteam9.workers.dev',
   token: '',
-  base: 'pbimhqp73ffojky',
-  tbl:{ books:'mnd6xqhpwkbjkuc', chat:'mzsb9sptl4jg132', pay:'mkguyxleqyds81x', members:'mxo9vs5ktvm5oup' },
+  base:  'pbimhqp73ffojky',
+  tbl:{ books:'mnd6xqhpwkbjkuc', chat:'mzsb9sptl4jg132', pay:'mkguyxleqyds81x',
+        members:'mxo9vs5ktvm5oup', submissions:'' },
   gb:{ token:'', bg:'' }
 };
 
 function loadCFG(){
   const s = localStorage.getItem('sp_cfg');
   if(s){ try{
-    const saved = JSON.parse(s);
-    CFG.url   = saved.url   || CFG.url;
-    CFG.token = saved.token || CFG.token;
-    CFG.base  = saved.base  || CFG.base;
-    if(saved.tbl){
-      CFG.tbl.books   = saved.tbl.books   || CFG.tbl.books;
-      CFG.tbl.chat    = saved.tbl.chat    || CFG.tbl.chat;
-      CFG.tbl.pay     = saved.tbl.pay     || CFG.tbl.pay;
-      CFG.tbl.members = saved.tbl.members || CFG.tbl.members;
+    const v=JSON.parse(s);
+    CFG.url=v.url||CFG.url; CFG.token=v.token||CFG.token; CFG.base=v.base||CFG.base;
+    if(v.tbl){
+      CFG.tbl.books=v.tbl.books||CFG.tbl.books; CFG.tbl.chat=v.tbl.chat||CFG.tbl.chat;
+      CFG.tbl.pay=v.tbl.pay||CFG.tbl.pay; CFG.tbl.members=v.tbl.members||CFG.tbl.members;
+      CFG.tbl.submissions=v.tbl.submissions||CFG.tbl.submissions;
     }
-    if(saved.gb){ CFG.gb.token=saved.gb.token||''; CFG.gb.bg=saved.gb.bg||''; }
-  }catch{} }
+    if(v.gb){CFG.gb.token=v.gb.token||'';CFG.gb.bg=v.gb.bg||'';}
+  }catch{}}
 }
 function saveCFG(){
-  CFG.url    = qs('c-url').value.trim().replace(/\/$/,'');
-  CFG.token  = qs('c-token').value.trim();
-  CFG.base   = qs('c-base').value.trim();
-  CFG.tbl.books = qs('c-tbl-books').value.trim();
-  CFG.tbl.chat  = qs('c-tbl-chat').value.trim();
-  CFG.tbl.pay     = qs('c-tbl-pay').value.trim();
-  CFG.tbl.members = qs('c-tbl-members').value.trim();
+  CFG.url=qs('c-url').value.trim().replace(/\/$/,''); CFG.token=qs('c-token').value.trim(); CFG.base=qs('c-base').value.trim();
+  CFG.tbl.books=qs('c-tbl-books').value.trim(); CFG.tbl.chat=qs('c-tbl-chat').value.trim();
+  CFG.tbl.pay=qs('c-tbl-pay').value.trim();
+  CFG.tbl.members=qs('c-tbl-members')?.value.trim()||'';
+  CFG.tbl.submissions=qs('c-tbl-submissions')?.value.trim()||'';
   CFG.gb.token  = qs('c-gb-tok').value.trim();
   CFG.gb.bg     = qs('c-gb-bg').value.trim();
   localStorage.setItem('sp_cfg', JSON.stringify(CFG));
@@ -843,13 +1133,10 @@ function saveCFG(){
   closeConfig();
 }
 function openConfig(){
-  qs('c-url').value      = CFG.url;
-  qs('c-token').value    = CFG.token;
-  qs('c-base').value     = CFG.base;
-  qs('c-tbl-books').value = CFG.tbl.books;
-  qs('c-tbl-chat').value  = CFG.tbl.chat;
-  qs('c-tbl-pay').value     = CFG.tbl.pay;
-  qs('c-tbl-members').value = CFG.tbl.members||'';
+  qs('c-url').value=CFG.url; qs('c-token').value=CFG.token; qs('c-base').value=CFG.base;
+  qs('c-tbl-books').value=CFG.tbl.books; qs('c-tbl-chat').value=CFG.tbl.chat; qs('c-tbl-pay').value=CFG.tbl.pay;
+  if(qs('c-tbl-members'))qs('c-tbl-members').value=CFG.tbl.members||'';
+  if(qs('c-tbl-submissions'))qs('c-tbl-submissions').value=CFG.tbl.submissions||'';
   qs('c-gb-tok').value    = CFG.gb.token;
   qs('c-gb-bg').value     = CFG.gb.bg;
   qs('cfg-modal').classList.add('open');
@@ -858,126 +1145,109 @@ function closeConfig(){ qs('cfg-modal').classList.remove('open'); }
 qs('cfg-modal').addEventListener('click', e => { if(e.target===qs('cfg-modal')) closeConfig(); });
 
 /* ================================================
-   NocoDB API (ใช้ Members Table เป็น Auth หลัก)
+   NocoDB API — Members Table Auth + File Upload
 ================================================ */
 
-/* --- Simple password hash (SHA-256 via Web Crypto) --- */
 async function hashPass(pass){
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass));
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pass));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
 const API = {
-  hdrs(){
-    return { 'Content-Type':'application/json', 'xc-token': CFG.token };
-  },
-  async req(method, path, body=null){
-    if(!CFG.url){ toast('กรุณาตั้งค่า NocoDB URL ก่อน','error'); openConfig(); throw new Error('no url'); }
-    const opts = { method, headers: this.hdrs() };
-    if(body) opts.body = JSON.stringify(body);
-    const r = await fetch(CFG.url + path, opts);
-    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.msg||e.message||`HTTP ${r.status}`); }
+  hdrs(){ return {'Content-Type':'application/json','xc-token':CFG.token}; },
+  async req(method,path,body=null){
+    if(!CFG.url){toast('กรุณาตั้งค่า NocoDB URL ก่อน','error');openConfig();throw new Error('no url');}
+    const opts={method,headers:this.hdrs()};
+    if(body) opts.body=JSON.stringify(body);
+    const r=await fetch(CFG.url+path,opts);
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.msg||e.message||`HTTP ${r.status}`);}
     return r.json();
   },
-  /* Members Table CRUD */
+  /* Members */
   findMemberByEmail(email){
-    const q = new URLSearchParams({where:`(email,eq,${email})`,limit:1}).toString();
+    const q=new URLSearchParams({where:`(email,eq,${email})`,limit:1}).toString();
     return this.req('GET',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}?${q}`);
   },
-  createMember(data){ return this.req('POST',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}`,data); },
-  updateMember(id,data){ return this.req('PATCH',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}/${id}`,data); },
-  /* Data */
-  list(tbl, p={}){
-    const q = new URLSearchParams(p).toString();
-    return this.req('GET',`/api/v1/db/data/noco/${CFG.base}/${tbl}?${q}`);
+  createMember(data){return this.req('POST',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}`,data);},
+  updateMember(id,data){return this.req('PATCH',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}/${id}`,data);},
+  /* Submissions */
+  getMySubmission(email){
+    const q=new URLSearchParams({where:`(member_email,eq,${email})`,limit:1}).toString();
+    return this.req('GET',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.submissions}?${q}`);
   },
-  create(tbl,data){ return this.req('POST',`/api/v1/db/data/noco/${CFG.base}/${tbl}`,data); },
-  count(tbl){ return this.req('GET',`/api/v1/db/data/noco/${CFG.base}/${tbl}/count`); }
+  createSubmission(data){return this.req('POST',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.submissions}`,data);},
+  /* Upload file → NocoDB Storage */
+  async uploadFile(file){
+    const fd=new FormData(); fd.append('file',file);
+    const r=await fetch(`${CFG.url}/api/v1/db/storage/upload`,{
+      method:'POST', headers:{'xc-token':CFG.token}, body:fd
+    });
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.msg||`Upload HTTP ${r.status}`);}
+    return r.json();
+  },
+  /* Data */
+  list(tbl,p={}){const q=new URLSearchParams(p).toString();return this.req('GET',`/api/v1/db/data/noco/${CFG.base}/${tbl}?${q}`);},
+  create(tbl,data){return this.req('POST',`/api/v1/db/data/noco/${CFG.base}/${tbl}`,data);},
+  count(tbl){return this.req('GET',`/api/v1/db/data/noco/${CFG.base}/${tbl}/count`);}
 };
 
 /* ================================================
-   AUTH — ใช้ Members Table โดยตรง (ไม่ผ่าน NocoDB Auth)
+   AUTH — ใช้ Members Table (ไม่ผ่าน NocoDB Auth)
 ================================================ */
-const AUTH = { token:null, user:null };
-AUTH.load = function(){
-  this.token = localStorage.getItem('sp_tok');
-  const u = localStorage.getItem('sp_usr');
-  if(u) try{ this.user=JSON.parse(u); }catch{}
+const AUTH={token:null,user:null};
+AUTH.load=function(){
+  this.token=localStorage.getItem('sp_tok');
+  const u=localStorage.getItem('sp_usr');
+  if(u)try{this.user=JSON.parse(u);}catch{}
 };
-AUTH.save = function(usr){
-  // ใช้ email เป็น session token
-  this.token = usr.email;
-  this.user  = usr;
-  localStorage.setItem('sp_tok', usr.email);
-  localStorage.setItem('sp_usr', JSON.stringify(usr));
+AUTH.save=function(usr){
+  this.token=usr.email; this.user=usr;
+  localStorage.setItem('sp_tok',usr.email);
+  localStorage.setItem('sp_usr',JSON.stringify(usr));
 };
-AUTH.clear = function(){
-  this.token=null; this.user=null;
-  localStorage.removeItem('sp_tok');
-  localStorage.removeItem('sp_usr');
+AUTH.clear=function(){
+  this.token=null;this.user=null;
+  localStorage.removeItem('sp_tok');localStorage.removeItem('sp_usr');
 };
 
 async function doLogin(){
-  const email = qs('l-email').value.trim().toLowerCase();
-  const pass  = qs('l-pass').value;
+  const email=qs('l-email').value.trim().toLowerCase();
+  const pass=qs('l-pass').value;
   if(!email||!pass) return toast('กรุณากรอกอีเมลและรหัสผ่าน','error');
-  setBtnLoad('login-btn', true);
+  setBtnLoad('login-btn',true);
   try{
-    const hashed = await hashPass(pass);
-    const res = await API.findMemberByEmail(email);
-    const member = res?.list?.[0];
+    const hashed=await hashPass(pass);
+    const res=await API.findMemberByEmail(email);
+    const member=res?.list?.[0];
     if(!member) throw new Error('ไม่พบบัญชีนี้ในระบบ');
-    if(member.status === 'suspended') throw new Error('บัญชีถูกระงับ กรุณาติดต่อ Admin');
-    if(member.password_hash !== hashed) throw new Error('รหัสผ่านไม่ถูกต้อง');
-    // อัปเดต last_login
-    await API.updateMember(member.Id||member.id, {
-      last_login: new Date().toISOString(),
-      status: 'active'
-    }).catch(()=>{});
-    AUTH.save({
-      email: member.email,
-      name:  member.name || email.split('@')[0],
-      phone: member.phone||'',
-      role:  member.role||'member',
-      memberId: member.Id||member.id||''
-    });
+    if(member.status==='suspended') throw new Error('บัญชีถูกระงับ');
+    if(member.password_hash!==hashed) throw new Error('รหัสผ่านไม่ถูกต้อง');
+    await API.updateMember(member.Id||member.id,{last_login:new Date().toISOString()}).catch(()=>{});
+    AUTH.save({email:member.email,name:member.name||email.split('@')[0],phone:member.phone||'',role:member.role||'member',memberId:member.Id||member.id||''});
     afterLogin();
-  }catch(e){ toast('เข้าสู่ระบบไม่สำเร็จ: '+e.message,'error'); }
-  finally{ setBtnLoad('login-btn', false, 'เข้าสู่ระบบ'); }
+  }catch(e){toast('เข้าสู่ระบบไม่สำเร็จ: '+e.message,'error');}
+  finally{setBtnLoad('login-btn',false,'เข้าสู่ระบบ');}
 }
 
 async function doRegister(){
-  const name  = qs('r-name').value.trim();
-  const email = qs('r-email').value.trim().toLowerCase();
-  const pass  = qs('r-pass').value;
+  const name=qs('r-name').value.trim();
+  const email=qs('r-email').value.trim().toLowerCase();
+  const pass=qs('r-pass').value;
   if(!name||!email||!pass) return toast('กรุณากรอกข้อมูลให้ครบ','error');
   if(pass.length<8) return toast('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร','error');
   if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)) return toast('รูปแบบอีเมลไม่ถูกต้อง','error');
-  setBtnLoad('reg-btn', true);
+  setBtnLoad('reg-btn',true);
   try{
-    // ตรวจสอบอีเมลซ้ำ
-    const exists = await API.findMemberByEmail(email);
-    if(exists?.list?.length > 0) throw new Error('อีเมลนี้ถูกใช้งานแล้ว');
-    // Hash password ก่อนบันทึก
-    const hashed = await hashPass(pass);
-    await API.createMember({
-      name,
-      email,
-      password_hash: hashed,
-      status:    'active',
-      role:      'member',
-      joined_at: new Date().toISOString(),
-      last_login: new Date().toISOString()
-    });
+    const exists=await API.findMemberByEmail(email);
+    if(exists?.list?.length>0) throw new Error('อีเมลนี้ถูกใช้งานแล้ว');
+    const hashed=await hashPass(pass);
+    await API.createMember({name,email,password_hash:hashed,status:'active',role:'member',joined_at:new Date().toISOString(),last_login:new Date().toISOString()});
     toast('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ','success');
     switchTab('login');
-    qs('l-email').value = email;
-    qs('l-pass').value  = '';
-    qs('l-pass').focus();
-  }catch(e){ toast('สมัครไม่สำเร็จ: '+e.message,'error'); }
-  finally{ setBtnLoad('reg-btn', false, 'สมัครสมาชิก'); }
+    qs('l-email').value=email; qs('l-pass').value=''; qs('l-pass').focus();
+  }catch(e){toast('สมัครไม่สำเร็จ: '+e.message,'error');}
+  finally{setBtnLoad('reg-btn',false,'สมัครสมาชิก');}
 }
-
 function doLogout(){
   AUTH.clear();
   stopPolling();
@@ -1011,7 +1281,7 @@ function afterLogin(){
    NAVIGATION / ROUTER
 ================================================ */
 let curPage = 'dashboard';
-const PAGES = ['dashboard','ebooks','viewer','qr','payment','chat','analytics','profile'];
+const PAGES = ['dashboard','ebooks','viewer','qr','payment','chat','analytics','submit','profile'];
 
 function navigate(page){
   if(curPage==='qr' && page!=='qr') stopQR();
@@ -1021,7 +1291,7 @@ function navigate(page){
     qs('page-'+p)?.classList.toggle('active', p===page);
   });
 
-  const navIds = ['dashboard','ebooks','qr','payment','chat','analytics','profile'];
+  const navIds = ['dashboard','ebooks','qr','payment','chat','analytics','submit','profile'];
   navIds.forEach(id=>{
     qs('snav-'+id)?.classList.toggle('active', id===page);
     qs('bnav-'+id)?.classList.toggle('active', id===page);
@@ -1036,6 +1306,7 @@ function navigate(page){
   if(page==='payment') loadPayHist();
   if(page==='qr') startQR();
   if(page==='analytics') loadAnalytics();
+  if(page==='submit') loadSubmitPage();
 
   icons();
 }
@@ -1532,7 +1803,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     qs('login-screen').style.display='flex';
   }
   // Redefine isLoggedIn properly
-  AUTH.isLoggedIn = ()=>!!AUTH.token;
+  AUTH.isLoggedIn = ()=>!!AUTH.token && !!AUTH.user;
   icons();
 });
 
