@@ -772,6 +772,10 @@ a{color:var(--gold);text-decoration:none}
       <label class="form-label">Table: Payments (ฟิลด์: reference_no, amount, description, status, user_email)</label>
       <input type="text" id="c-tbl-pay" class="form-input" placeholder="md_xxxxxxxxxxxxxxxxx">
     </div>
+    <div class="form-group">
+      <label class="form-label">Table: Members (ฟิลด์: name, email, phone, status, role, joined_at, last_login) 🔑</label>
+      <input type="text" id="c-tbl-members" class="form-input" placeholder="md_xxxxxxxxxxxxxxxxx">
+    </div>
 
     <div class="divider"></div>
     <div class="section-label">GBPrimePay</div>
@@ -801,10 +805,10 @@ a{color:var(--gold);text-decoration:none}
    CONFIG
 ================================================ */
 let CFG = {
-  url: 'https://smartplus.smartplusteam9.workers.dev/', // เปลี่ยนเป็น URL ของ Worker คุณ
-  token: '',   // ไม่ต้องใส่ token — Worker จัดการให้
+  url: 'https://smartplus.smartplusteam9.workers.dev',
+  token: '',
   base: 'pbimhqp73ffojky',
-  tbl:{ books:'mnd6xqhpwkbjkuc', chat:'mzsb9sptl4jg132', pay:'mkguyxleqyds81x' },
+  tbl:{ books:'mnd6xqhpwkbjkuc', chat:'mzsb9sptl4jg132', pay:'mkguyxleqyds81x', members:'mxo9vs5ktvm5oup' },
   gb:{ token:'', bg:'' }
 };
 
@@ -815,7 +819,12 @@ function loadCFG(){
     CFG.url   = saved.url   || CFG.url;
     CFG.token = saved.token || CFG.token;
     CFG.base  = saved.base  || CFG.base;
-    if(saved.tbl){ CFG.tbl.books=saved.tbl.books||CFG.tbl.books; CFG.tbl.chat=saved.tbl.chat||CFG.tbl.chat; CFG.tbl.pay=saved.tbl.pay||CFG.tbl.pay; }
+    if(saved.tbl){
+      CFG.tbl.books   = saved.tbl.books   || CFG.tbl.books;
+      CFG.tbl.chat    = saved.tbl.chat    || CFG.tbl.chat;
+      CFG.tbl.pay     = saved.tbl.pay     || CFG.tbl.pay;
+      CFG.tbl.members = saved.tbl.members || CFG.tbl.members;
+    }
     if(saved.gb){ CFG.gb.token=saved.gb.token||''; CFG.gb.bg=saved.gb.bg||''; }
   }catch{} }
 }
@@ -825,7 +834,8 @@ function saveCFG(){
   CFG.base   = qs('c-base').value.trim();
   CFG.tbl.books = qs('c-tbl-books').value.trim();
   CFG.tbl.chat  = qs('c-tbl-chat').value.trim();
-  CFG.tbl.pay   = qs('c-tbl-pay').value.trim();
+  CFG.tbl.pay     = qs('c-tbl-pay').value.trim();
+  CFG.tbl.members = qs('c-tbl-members').value.trim();
   CFG.gb.token  = qs('c-gb-tok').value.trim();
   CFG.gb.bg     = qs('c-gb-bg').value.trim();
   localStorage.setItem('sp_cfg', JSON.stringify(CFG));
@@ -838,7 +848,8 @@ function openConfig(){
   qs('c-base').value     = CFG.base;
   qs('c-tbl-books').value = CFG.tbl.books;
   qs('c-tbl-chat').value  = CFG.tbl.chat;
-  qs('c-tbl-pay').value   = CFG.tbl.pay;
+  qs('c-tbl-pay').value     = CFG.tbl.pay;
+  qs('c-tbl-members').value = CFG.tbl.members||'';
   qs('c-gb-tok').value    = CFG.gb.token;
   qs('c-gb-bg').value     = CFG.gb.bg;
   qs('cfg-modal').classList.add('open');
@@ -866,6 +877,13 @@ const API = {
   /* Auth */
   login(email,password){ return this.req('POST','/api/v1/auth/user/signin',{email,password}); },
   register(email,password){ return this.req('POST','/api/v1/auth/user/signup',{email,password}); },
+  /* Members Table */
+  createMember(data){ return this.req('POST',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}`,data); },
+  findMember(email){
+    const q = new URLSearchParams({where:`(email,eq,${email})`,limit:1}).toString();
+    return this.req('GET',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}?${q}`);
+  },
+  updateMember(id,data){ return this.req('PATCH',`/api/v1/db/data/noco/${CFG.base}/${CFG.tbl.members}/${id}`,data); },
   me(){ return this.req('GET','/api/v1/auth/user/me'); },
   /* Data */
   list(tbl, p={}){
@@ -904,8 +922,24 @@ async function doLogin(){
   try{
     const r = await API.login(email, pass);
     if(!r.token) throw new Error('ไม่ได้รับ token');
-    AUTH.save(r.token, { email, name: r.user?.display_name || email.split('@')[0] });
-    try{ const me = await API.me(); AUTH.user={...AUTH.user,...me}; localStorage.setItem('sp_usr',JSON.stringify(AUTH.user)); }catch{}
+    let userData = { email, name: r.user?.display_name || email.split('@')[0] };
+    // ดึงข้อมูลเพิ่มเติมจาก Members table
+    try{
+      const me = await API.me();
+      userData = {...userData, ...me};
+      if(CFG.tbl.members){
+        const found = await API.findMember(email);
+        const member = found?.list?.[0];
+        if(member){
+          userData.display_name = member.name || userData.display_name;
+          userData.phone = member.phone || '';
+          userData.memberId = member.Id || member.id || '';
+          // อัปเดต last_login
+          await API.updateMember(member.Id||member.id, { last_login: new Date().toISOString() }).catch(()=>{});
+        }
+      }
+    }catch{}
+    AUTH.save(r.token, userData);
     afterLogin();
   }catch(e){ toast('เข้าสู่ระบบไม่สำเร็จ: '+e.message,'error'); }
   finally{ setBtnLoad('login-btn', false, 'เข้าสู่ระบบ'); }
@@ -917,13 +951,59 @@ async function doRegister(){
   const pass  = qs('r-pass').value;
   if(!name||!email||!pass) return toast('กรุณากรอกข้อมูลให้ครบ','error');
   if(pass.length<8) return toast('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร','error');
+  if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)) return toast('รูปแบบอีเมลไม่ถูกต้อง','error');
   setBtnLoad('reg-btn', true);
   try{
+    // Step 1: สมัครกับ NocoDB Auth
     await API.register(email, pass);
+
+    // Step 2: บันทึกข้อมูลสมาชิกลง Members Table (ถ้าตั้งค่าไว้)
+    if(CFG.tbl.members){
+      try{
+        await API.createMember({
+          name: name,
+          email: email,
+          status: 'active',
+          role: 'member',
+          joined_at: new Date().toISOString(),
+          last_login: new Date().toISOString()
+        });
+      }catch(me){ console.warn('Members table save failed:', me.message); }
+    }
+
     toast('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ','success');
     switchTab('login');
     qs('l-email').value = email;
-  }catch(e){ toast('สมัครไม่สำเร็จ: '+e.message,'error'); }
+    qs('l-pass').focus();
+  }catch(e){
+    // NocoDB Cloud อาจปิด signup endpoint — ลอง fallback บันทึกใน Members table อย่างเดียว
+    if(e.message.includes('Not found') || e.message.includes('404')){
+      if(!CFG.tbl.members){
+        toast('กรุณาตั้งค่า Members Table ID ในการตั้งค่าก่อน','error');
+        openConfig();
+        return;
+      }
+      try{
+        // ตรวจสอบว่า email ซ้ำไหม
+        const exists = await API.findMember(email);
+        if(exists?.list?.length > 0){
+          toast('อีเมลนี้ถูกใช้แล้ว','error'); return;
+        }
+        await API.createMember({
+          name, email,
+          password_hint: '(ตั้งรหัสผ่านผ่าน NocoDB Invite)',
+          status: 'pending',
+          role: 'member',
+          joined_at: new Date().toISOString()
+        });
+        toast('บันทึกข้อมูลแล้ว! Admin จะเปิดใช้งานบัญชีให้','success');
+        switchTab('login');
+        qs('l-email').value = email;
+      }catch(e2){ toast('สมัครไม่สำเร็จ: '+e2.message,'error'); }
+    } else {
+      toast('สมัครไม่สำเร็จ: '+e.message,'error');
+    }
+  }
   finally{ setBtnLoad('reg-btn', false, 'สมัครสมาชิก'); }
 }
 
