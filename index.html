@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#070B18">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>SmartPlus</title>
 
@@ -509,7 +510,7 @@ a{color:var(--green);text-decoration:none}
 ================================================ */
 @media(max-width:768px){
   .sidebar{display:none}
-  #bottom-nav{display:flex}
+  /* #bottom-nav visibility controlled ONLY by JS (afterLogin/doLogout) — never shows on login screen */
   .page{padding:18px 16px 90px}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .ebook-grid{grid-template-columns:repeat(2,1fr)}
@@ -1674,7 +1675,7 @@ function doLogout(){
 function afterLogin(){
   qs('login-screen').style.display='none';
   qs('main-app').classList.add('visible');
-  qs('bottom-nav').style.display='flex';
+  if(window.innerWidth<=768) qs('bottom-nav').style.display='flex';
 
   const name = AUTH.user?.display_name||AUTH.user?.name||AUTH.user?.email?.split('@')[0]||'สมาชิก';
   const email = AUTH.user?.email||'';
@@ -2280,6 +2281,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   // Redefine isLoggedIn properly
   AUTH.isLoggedIn = ()=>!!AUTH.token && !!AUTH.user;
+  // Adjust bottom-nav on resize (mobile ↔ desktop)
+  window.addEventListener('resize', ()=>{
+    if(!AUTH.isLoggedIn()) return;
+    qs('bottom-nav').style.display = window.innerWidth<=768 ? 'flex' : 'none';
+  });
   icons();
 });
 
