@@ -25,7 +25,8 @@ a{color:var(--green);text-decoration:none}
 /* LOGIN */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at 60% 20%,rgba(14,50,30,.95),var(--bg))}
 .login-box{width:100%;max-width:380px;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:36px;box-shadow:0 32px 64px rgba(0,0,0,.5)}
-.logo-icon{width:60px;height:60px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 32px rgba(34,197,94,.12)}
+.logo-icon{width:64px;height:64px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;box-shadow:0 8px 32px rgba(34,197,94,.12)}
+.logo-icon img{width:48px;height:48px;object-fit:contain}
 .logo-title{font-family:var(--font-h);font-size:22px;font-weight:700;color:var(--green);text-align:center}
 .logo-sub{font-size:10px;color:var(--text-s);letter-spacing:3px;text-transform:uppercase;text-align:center;margin-top:2px;margin-bottom:28px}
 
@@ -434,9 +435,17 @@ const MEM_TBL    = 'mxo9vs5ktvm5oup';
  * username : admin
  * password : SmartPlus@2025
  * เปลี่ยนได้จากหน้าเว็บ → กดปุ่ม "เปลี่ยนรหัสผ่าน"
+ * SHA-256("SmartPlus@2025") = 98e43f0f8a68e50efd81812a221420252ae4a33dad3acc5faf36f198de5bcdd3
  */
 const DEFAULT_ADMIN_USER = 'admin';
-const DEFAULT_ADMIN_HASH = '97c6a8c7a2c2db4dcf7d0e36985ec3f3d60bdc3f8b02afb79b35f82c7e84e8df';
+const DEFAULT_ADMIN_HASH = '98e43f0f8a68e50efd81812a221420252ae4a33dad3acc5faf36f198de5bcdd3';
+
+/* ── NocoDB Admins Table (optional) ──
+ * ถ้าต้องการเก็บ credentials ใน NocoDB
+ * ให้สร้างตาราง "admins" ใน NocoDB มี field: username, password_hash, is_active
+ * แล้วใส่ Table ID ที่นี่
+ */
+const ADMIN_TBL_ID = ''; // ใส่ Table ID ของตาราง admins ถ้ามี เช่น 'mxxxxxxxxxxxx'
 
 let ADMIN = { url: WORKER_URL, base: BASE_ID, tbl: { submissions: SUB_TBL, members: MEM_TBL } };
 let ADMIN_SESSION = false;
@@ -527,16 +536,52 @@ async function adminLogin(){
   qs('login-err')?.classList.add('hidden');
   if(!username||!password){ showLoginErr('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน'); return; }
 
-  const savedUser = localStorage.getItem('sp_adm_user')||DEFAULT_ADMIN_USER;
-  const savedHash = localStorage.getItem('sp_adm_hash')||DEFAULT_ADMIN_HASH;
+  setBtnLoad('login-btn', true);
   const inputHash = await sha256(password);
 
-  if(username!==savedUser || inputHash!==savedHash){
-    showLoginErr('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'); return;
-  }
+  try {
+    let authenticated = false;
 
-  setBtnLoad('login-btn', true);
-  try{
+    // ── วิธีที่ 1: ตรวจสอบจาก NocoDB (ถ้ามี ADMIN_TBL_ID) ──
+    if (ADMIN_TBL_ID) {
+      try {
+        const res = await API.list(ADMIN_TBL_ID, {
+          where: `(username,eq,${username})~and(is_active,eq,true)`,
+          limit: 1
+        });
+        const admins = res.list || [];
+        if (admins.length > 0) {
+          const adm = admins[0];
+          if (adm.password_hash === inputHash) {
+            authenticated = true;
+            // บันทึก cache ใน localStorage
+            localStorage.setItem('sp_adm_user', username);
+            localStorage.setItem('sp_adm_hash', inputHash);
+          }
+        }
+      } catch(e) {
+        // NocoDB ล้มเหลว → fallback ไป local
+        console.warn('NocoDB admin auth failed, using local:', e.message);
+      }
+    }
+
+    // ── วิธีที่ 2: ตรวจสอบจาก localStorage / default ──
+    if (!authenticated) {
+      const savedUser = localStorage.getItem('sp_adm_user') || DEFAULT_ADMIN_USER;
+      const savedHash = localStorage.getItem('sp_adm_hash') || DEFAULT_ADMIN_HASH;
+      if (username === savedUser && inputHash === savedHash) {
+        authenticated = true;
+      }
+    }
+
+    if (!authenticated) {
+      showLoginErr('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+      setBtnLoad('login-btn', false, '<i data-lucide="log-in"></i> เข้าสู่ระบบ Admin');
+      icons();
+      return;
+    }
+
+    // ── ทดสอบ connection ──
     await API.count(ADMIN.tbl.submissions);
     ADMIN_SESSION = true;
     localStorage.setItem('sp_adm_session','1');
@@ -544,7 +589,7 @@ async function adminLogin(){
     qs('main-app').classList.add('visible');
     qs('dash-date').textContent = new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     icons(); loadDashboard();
-  }catch(e){
+  } catch(e) {
     showLoginErr('เชื่อมต่อฐานข้อมูลไม่ได้: '+e.message);
   }
   setBtnLoad('login-btn', false, '<i data-lucide="log-in"></i> เข้าสู่ระบบ Admin');
