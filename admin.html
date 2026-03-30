@@ -11,12 +11,9 @@
 <style>
 :root{
   --bg:#060D10;--surface:#091820;--card:#0D2230;--border:#163545;
-  --green:#22C55E;--green-l:#4ADE80;--green-d:#16A34A;
-  --blue:#3B82F6;--blue-l:#60A5FA;--blue-d:#1D4ED8;
-  --cyan:#06B6D4;--yellow:#EAB308;
   --gold:#22C55E;--gold-l:#4ADE80;--gold-d:#16A34A;
   --text:#E8F4F0;--text-s:#6B9A8E;--text-d:#1E3A30;
-  --success:#22C55E;--error:#F87171;--warn:#EAB308;
+  --success:#22C55E;--error:#F87171;--warn:#EAB308;--blue:#3B82F6;--blue-l:#60A5FA;--blue-d:#1D4ED8;--cyan:#06B6D4;--yellow:#EAB308;--green:#22C55E;--green-l:#4ADE80;--green-d:#16A34A;
   --font:'IBM Plex Sans Thai',sans-serif;--font-h:'Prompt',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -26,29 +23,22 @@ input,button,select{font-family:var(--font)}
 a{color:var(--green);text-decoration:none}
 
 /* LOGIN */
-#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
-  background:radial-gradient(ellipse at 60% 20%,rgba(14,50,30,.95),var(--bg))}
-.login-box{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:36px;box-shadow:0 32px 64px rgba(0,0,0,.6)}
-.logo-icon{width:72px;height:72px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 32px rgba(34,197,94,.12)}
-.logo-icon img{width:56px;height:56px;object-fit:contain}
-.logo-title{font-family:var(--font-h);font-size:22px;font-weight:700;text-align:center;
-  background:linear-gradient(135deg,var(--green),var(--blue));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at 60% 20%,rgba(14,50,30,.95),var(--bg))}
+.login-box{width:100%;max-width:380px;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:36px;box-shadow:0 32px 64px rgba(0,0,0,.5)}
+.logo-icon{width:60px;height:60px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 32px rgba(34,197,94,.12)}
+.logo-title{font-family:var(--font-h);font-size:22px;font-weight:700;color:var(--green);text-align:center}
 .logo-sub{font-size:10px;color:var(--text-s);letter-spacing:3px;text-transform:uppercase;text-align:center;margin-top:2px;margin-bottom:28px}
 
 /* LAYOUT */
 #main-app{display:none;height:100vh;overflow:hidden}
 #main-app.visible{display:flex}
-.sidebar{width:248px;
-  background:linear-gradient(180deg,var(--surface) 0%,rgba(9,24,32,.98) 100%);
-  border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
-.sidebar-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
-.sidebar-header img{width:36px;height:36px;object-fit:contain;flex-shrink:0}
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:20px;border-bottom:1px solid var(--border)}
 .nav-section{padding:8px 0}
 .nav-label{font-size:10px;font-weight:700;color:var(--text-d);letter-spacing:1.2px;text-transform:uppercase;padding:8px 20px 4px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:var(--text-s);border-left:3px solid transparent;transition:all .15s;font-size:13px;font-weight:500}
 .nav-item:hover{color:var(--text);background:rgba(34,197,94,.04)}
-.nav-item.active{color:var(--green);border-left-color:var(--green);background:rgba(34,197,94,.07)}
+.nav-item.active{color:var(--green);border-left-color:var(--green);background:rgba(34,197,94,.06)}
 .nav-item svg{width:16px;height:16px;flex-shrink:0}
 .sidebar-bottom{margin-top:auto;padding:12px 0;border-top:1px solid var(--border)}
 .content-area{flex:1;overflow-y:auto;background:var(--bg)}
@@ -57,7 +47,7 @@ a{color:var(--green);text-decoration:none}
 .page{display:none;min-height:100%;padding:28px;animation:fadeUp .2s ease}
 .page.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:gap}
 .page-title{font-family:var(--font-h);font-size:20px;font-weight:700}
 .page-sub{font-size:12px;color:var(--text-s);margin-top:2px}
 
@@ -67,9 +57,7 @@ a{color:var(--green);text-decoration:none}
 
 /* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;
-  transition:border-color .2s,transform .2s}
-.stat-card:hover{border-color:rgba(34,197,94,.3);transform:translateY(-2px)}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
 .stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
 .stat-icon svg{width:17px;height:17px}
 .si-gold{background:rgba(34,197,94,.12);color:var(--green)}
@@ -86,15 +74,13 @@ a{color:var(--green);text-decoration:none}
 .form-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.1)}
 .form-input::placeholder{color:var(--text-d)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 16px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none}
-.btn-gold{background:linear-gradient(135deg,var(--green),var(--green-d));color:#030E07;box-shadow:0 4px 12px rgba(34,197,94,.2)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#16A34A);color:#030E07;box-shadow:0 4px 12px rgba(34,197,94,.2)}
 .btn-gold:hover{filter:brightness(1.08)}
-.btn-blue{background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;box-shadow:0 4px 12px rgba(59,130,246,.2)}
-.btn-blue:hover{filter:brightness(1.08)}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-s)}
 .btn-outline:hover{border-color:var(--green);color:var(--green)}
 .btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
 .btn-danger{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--error)}
-.btn-success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green)}
+.btn-success{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--success)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 
 /* TABLE */
@@ -110,8 +96,8 @@ td{padding:11px 14px;vertical-align:middle;color:var(--text)}
 
 /* BADGES */
 .badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
-.badge-pending{background:rgba(234,179,8,.12);color:var(--yellow)}
-.badge-approved{background:rgba(34,197,94,.12);color:var(--green)}
+.badge-pending{background:rgba(251,191,36,.12);color:var(--warn)}
+.badge-approved{background:rgba(52,211,153,.12);color:var(--success)}
 .badge-rejected{background:rgba(248,113,113,.12);color:var(--error)}
 
 /* SEARCH BAR */
@@ -180,30 +166,68 @@ td{padding:11px 14px;vertical-align:middle;color:var(--text)}
     </div>
     <div class="logo-title">SmartPlus</div>
     <div class="logo-sub">Admin Dashboard</div>
-    <div class="form-group">
-      <label class="form-label">Admin Token (xc-token)</label>
-      <input type="password" id="l-token" class="form-input" placeholder="ใส่ xc-token ของ NocoDB">
+
+    <!-- หน้า Login -->
+    <div id="view-login">
+      <div class="form-group">
+        <label class="form-label">ชื่อผู้ใช้ Admin</label>
+        <input type="text" id="l-user" class="form-input" placeholder="admin"
+          autocomplete="username" onkeyup="if(event.key==='Enter')qs('l-pass').focus()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">รหัสผ่าน</label>
+        <div style="position:relative">
+          <input type="password" id="l-pass" class="form-input" placeholder="••••••••"
+            autocomplete="current-password" style="padding-right:44px"
+            onkeyup="if(event.key==='Enter')adminLogin()">
+          <button onclick="togglePwd('l-pass','eye-1')" type="button"
+            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-s);cursor:pointer;padding:4px">
+            <i data-lucide="eye" id="eye-1" style="width:16px;height:16px"></i>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-gold" style="width:100%;margin-top:6px" id="login-btn" onclick="adminLogin()">
+        <i data-lucide="log-in"></i> เข้าสู่ระบบ Admin
+      </button>
+      <div id="login-err" class="hidden"
+        style="margin-top:10px;font-size:12px;color:var(--error);text-align:center;padding:8px;background:rgba(248,113,113,.08);border-radius:8px"></div>
+      <div style="text-align:center;margin-top:14px">
+        <button onclick="showView('change-pw')" type="button"
+          style="background:none;border:none;color:var(--text-s);font-size:11px;cursor:pointer;font-family:var(--font)">
+          🔑 เปลี่ยนรหัสผ่าน
+        </button>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Worker URL</label>
-      <input type="text" id="l-url" class="form-input" placeholder="https://xxx.workers.dev" value="https://smartplus.smartplusteam9.workers.dev">
+
+    <!-- หน้าเปลี่ยนรหัสผ่าน -->
+    <div id="view-change-pw" class="hidden">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:18px;display:flex;align-items:center;gap:8px">
+        🔑 เปลี่ยนรหัสผ่าน Admin
+      </div>
+      <div class="form-group">
+        <label class="form-label">ชื่อผู้ใช้</label>
+        <input type="text" id="cp-user" class="form-input" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">รหัสผ่านเดิม</label>
+        <input type="password" id="cp-old" class="form-input" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)</label>
+        <input type="password" id="cp-new" class="form-input" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ยืนยันรหัสผ่านใหม่</label>
+        <input type="password" id="cp-confirm" class="form-input" placeholder="••••••••"
+          autocomplete="new-password" onkeyup="if(event.key==='Enter')changePassword()">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-gold" style="flex:1" onclick="changePassword()">💾 บันทึก</button>
+        <button class="btn btn-outline" style="flex:1;width:auto" onclick="showView('login')">ยกเลิก</button>
+      </div>
+      <div id="cp-err" class="hidden"
+        style="margin-top:10px;font-size:12px;color:var(--error);text-align:center;padding:8px;background:rgba(248,113,113,.08);border-radius:8px"></div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Base ID</label>
-      <input type="text" id="l-base" class="form-input" placeholder="pbimhqp73ffojky" value="pbimhqp73ffojky">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Submissions Table ID</label>
-      <input type="text" id="l-sub-tbl" class="form-input" placeholder="mxbzsdqb34h7ulw" value="mxbzsdqb34h7ulw">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Members Table ID</label>
-      <input type="text" id="l-mem-tbl" class="form-input" placeholder="mxo9vs5ktvm5oup" value="mxo9vs5ktvm5oup">
-    </div>
-    <button class="btn btn-gold" style="width:100%;margin-top:6px" onclick="adminLogin()">
-      <i data-lucide="log-in"></i> เข้าสู่ระบบ Admin
-    </button>
-    <div id="login-err" class="hidden" style="margin-top:10px;font-size:12px;color:var(--error);text-align:center"></div>
   </div>
 </div>
 
@@ -212,11 +236,8 @@ td{padding:11px 14px;vertical-align:middle;color:var(--text)}
   <!-- Sidebar -->
   <nav class="sidebar">
     <div class="sidebar-header">
-      <img src="https://i.ibb.co/fVKWjCQS/Smp-Logo-png.png" alt="SmartPlus Logo">
-      <div>
-        <div class="font-h" style="font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">SmartPlus</div>
-        <div style="font-size:9px;color:var(--text-s);letter-spacing:1.5px;text-transform:uppercase">Admin Panel</div>
-      </div>
+      <div class="font-h" style="font-size:17px;font-weight:700;color:var(--green)">SmartPlus</div>
+      <div class="text-xs text-s" style="margin-top:2px">Admin Panel</div>
     </div>
     <div class="nav-section">
       <div class="nav-label">หลัก</div>
@@ -402,15 +423,23 @@ td{padding:11px 14px;vertical-align:middle;color:var(--text)}
 
 <script>
 /* ================================================
-   CONFIG & INIT
+   CONFIG — hardcoded, ไม่เปิดเผย token ใน client
 ================================================ */
 const WORKER_URL = 'https://smartplus.smartplusteam9.workers.dev';
 const BASE_ID    = 'pbimhqp73ffojky';
+const SUB_TBL    = 'mxbzsdqb34h7ulw';
+const MEM_TBL    = 'mxo9vs5ktvm5oup';
 
-let ADMIN = {
-  token: '', url: WORKER_URL, base: BASE_ID,
-  tbl: { submissions: 'mxbzsdqb34h7ulw', members: 'mxo9vs5ktvm5oup' }
-};
+/* Default credentials (SHA-256 hash)
+ * username : admin
+ * password : SmartPlus@2025
+ * เปลี่ยนได้จากหน้าเว็บ → กดปุ่ม "เปลี่ยนรหัสผ่าน"
+ */
+const DEFAULT_ADMIN_USER = 'admin';
+const DEFAULT_ADMIN_HASH = '97c6a8c7a2c2db4dcf7d0e36985ec3f3d60bdc3f8b02afb79b35f82c7e84e8df';
+
+let ADMIN = { url: WORKER_URL, base: BASE_ID, tbl: { submissions: SUB_TBL, members: MEM_TBL } };
+let ADMIN_SESSION = false;
 
 let allSubmissions = [];
 let filteredSubs   = [];
@@ -432,6 +461,28 @@ function baht(n){ return '฿'+Number(n||0).toLocaleString('th-TH',{minimumFract
 function fmtDate(s){ try{ return new Date(s).toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'}); }catch{ return '—'; } }
 function icons(){ if(window.lucide) lucide.createIcons(); }
 
+async function sha256(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function showView(v){
+  ['view-login','view-change-pw'].forEach(id=>{
+    const el=qs(id); if(el) el.classList.toggle('hidden', id!=='view-'+v);
+  });
+  qs('login-err')?.classList.add('hidden');
+  qs('cp-err')?.classList.add('hidden');
+  icons();
+}
+
+function togglePwd(inputId, iconId){
+  const inp=qs(inputId); if(!inp) return;
+  inp.type = inp.type==='password'?'text':'password';
+  const ico=qs(iconId);
+  if(ico) ico.setAttribute('data-lucide', inp.type==='password'?'eye':'eye-off');
+  icons();
+}
+
 function toast(msg, type='info'){
   const c=qs('toasts'), el=document.createElement('div');
   el.className='toast '+type;
@@ -443,12 +494,19 @@ function toast(msg, type='info'){
 
 function setBadge(id,n){ const el=qs(id); if(el){ el.textContent=n; el.style.display=n>0?'inline':'none'; } }
 
+function setBtnLoad(id, loading, labelHTML=''){
+  const btn=qs(id); if(!btn) return;
+  if(loading){ btn.innerHTML='<div style="width:16px;height:16px;border:2px solid rgba(0,0,0,.2);border-top-color:#030E07;border-radius:50%;animation:spin .65s linear infinite"></div>'; btn.disabled=true; }
+  else{ btn.innerHTML=labelHTML; btn.disabled=false; }
+}
+
 /* ================================================
-   API
+   API — ไม่ส่ง xc-token จาก client
+         Worker (NOCODB_TOKEN env) เพิ่ม token ให้อัตโนมัติ
 ================================================ */
 const API = {
   async req(method, path, body=null){
-    const h = { 'Content-Type':'application/json', 'xc-token': ADMIN.token };
+    const h = { 'Content-Type':'application/json' };
     const opts = { method, headers: h };
     if(body) opts.body = JSON.stringify(body);
     const r = await fetch(ADMIN.url + path, opts);
@@ -464,32 +522,69 @@ const API = {
    LOGIN / LOGOUT
 ================================================ */
 async function adminLogin(){
-  const token  = qs('l-token').value.trim();
-  const url    = qs('l-url').value.trim().replace(/\/$/,'');
-  const base   = qs('l-base').value.trim();
-  const subTbl = qs('l-sub-tbl').value.trim();
-  const memTbl = qs('l-mem-tbl').value.trim();
-  if(!token) return showLoginErr('กรุณาใส่ xc-token');
-  if(!subTbl) return showLoginErr('กรุณาใส่ Submissions Table ID');
-  ADMIN.token = token; ADMIN.url = url||WORKER_URL; ADMIN.base = base||BASE_ID;
-  ADMIN.tbl.submissions = subTbl; ADMIN.tbl.members = memTbl||'mxo9vs5ktvm5oup';
-  // ทดสอบ connection
+  const username = (qs('l-user').value||'').trim().toLowerCase();
+  const password = qs('l-pass').value||'';
+  qs('login-err')?.classList.add('hidden');
+  if(!username||!password){ showLoginErr('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน'); return; }
+
+  const savedUser = localStorage.getItem('sp_adm_user')||DEFAULT_ADMIN_USER;
+  const savedHash = localStorage.getItem('sp_adm_hash')||DEFAULT_ADMIN_HASH;
+  const inputHash = await sha256(password);
+
+  if(username!==savedUser || inputHash!==savedHash){
+    showLoginErr('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'); return;
+  }
+
+  setBtnLoad('login-btn', true);
   try{
     await API.count(ADMIN.tbl.submissions);
-    localStorage.setItem('sp_admin', JSON.stringify(ADMIN));
+    ADMIN_SESSION = true;
+    localStorage.setItem('sp_adm_session','1');
     qs('login-screen').style.display='none';
     qs('main-app').classList.add('visible');
     qs('dash-date').textContent = new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     icons(); loadDashboard();
-  }catch(e){ showLoginErr('เชื่อมต่อไม่ได้: '+e.message); }
+  }catch(e){
+    showLoginErr('เชื่อมต่อฐานข้อมูลไม่ได้: '+e.message);
+  }
+  setBtnLoad('login-btn', false, '<i data-lucide="log-in"></i> เข้าสู่ระบบ Admin');
+  icons();
 }
 
-function showLoginErr(msg){ const el=qs('login-err'); el.textContent=msg; el.classList.remove('hidden'); }
+async function changePassword(){
+  const username    = (qs('cp-user').value||'').trim().toLowerCase();
+  const oldPass     = qs('cp-old').value||'';
+  const newPass     = qs('cp-new').value||'';
+  const confirmPass = qs('cp-confirm').value||'';
+  qs('cp-err')?.classList.add('hidden');
+  if(!username||!oldPass||!newPass){ showCPErr('กรุณากรอกข้อมูลให้ครบ'); return; }
+  if(newPass.length<8){ showCPErr('รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร'); return; }
+  if(newPass!==confirmPass){ showCPErr('รหัสผ่านใหม่ไม่ตรงกัน'); return; }
+
+  const savedUser = localStorage.getItem('sp_adm_user')||DEFAULT_ADMIN_USER;
+  const savedHash = localStorage.getItem('sp_adm_hash')||DEFAULT_ADMIN_HASH;
+  const oldHash   = await sha256(oldPass);
+  if(username!==savedUser||oldHash!==savedHash){ showCPErr('ชื่อผู้ใช้หรือรหัสผ่านเดิมไม่ถูกต้อง'); return; }
+
+  const newHash = await sha256(newPass);
+  localStorage.setItem('sp_adm_user', username);
+  localStorage.setItem('sp_adm_hash', newHash);
+  toast('เปลี่ยนรหัสผ่านสำเร็จ! กรุณาล็อกอินใหม่','success');
+  showView('login');
+  ['cp-old','cp-new','cp-confirm'].forEach(id=>{ const el=qs(id); if(el) el.value=''; });
+}
+
+function showLoginErr(msg){ const el=qs('login-err'); if(el){ el.textContent=msg; el.classList.remove('hidden'); } }
+function showCPErr(msg){ const el=qs('cp-err'); if(el){ el.textContent=msg; el.classList.remove('hidden'); } }
 
 function adminLogout(){
-  localStorage.removeItem('sp_admin');
+  ADMIN_SESSION=false;
+  localStorage.removeItem('sp_adm_session');
   qs('login-screen').style.display='flex';
   qs('main-app').classList.remove('visible');
+  showView('login');
+  const lu=qs('l-user'); if(lu) lu.value='';
+  const lp=qs('l-pass'); if(lp) lp.value='';
 }
 
 /* ================================================
@@ -865,21 +960,26 @@ function exportExcel(){
 ================================================ */
 document.addEventListener('DOMContentLoaded', ()=>{
   icons();
-  // โหลด session ที่บันทึกไว้
-  const saved = localStorage.getItem('sp_admin');
-  if(saved){
-    try{
-      ADMIN = JSON.parse(saved);
-      qs('l-token').value   = ADMIN.token||'';
-      qs('l-url').value     = ADMIN.url||WORKER_URL;
-      qs('l-base').value    = ADMIN.base||BASE_ID;
-      qs('l-sub-tbl').value = ADMIN.tbl?.submissions||'';
-      qs('l-mem-tbl').value = ADMIN.tbl?.members||'mxo9vs5ktvm5oup';
-    }catch{}
+  showView('login');
+  // ตรวจ session (เฉพาะ tab เดิมที่ยังเปิดอยู่)
+  if(localStorage.getItem('sp_adm_session')==='1'){
+    // auto-login ถ้า session ยังอยู่ใน tab เดิม
+    // (ทดสอบ connection ก่อน)
+    API.count(ADMIN.tbl.submissions).then(()=>{
+      ADMIN_SESSION = true;
+      qs('login-screen').style.display='none';
+      qs('main-app').classList.add('visible');
+      const dd=qs('dash-date');
+      if(dd) dd.textContent = new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+      icons(); loadDashboard();
+    }).catch(()=>{
+      localStorage.removeItem('sp_adm_session');
+    });
   }
   // ESC ปิด modal
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeImgModal(); }});
-  qs('sub-modal').addEventListener('click',e=>{ if(e.target===qs('sub-modal')) closeModal(); });
+  const sm=qs('sub-modal');
+  if(sm) sm.addEventListener('click',e=>{ if(e.target===sm) closeModal(); });
 });
 </script>
 </body>
