@@ -384,20 +384,29 @@ async function submitForm(){
   const smpf  = parseCoin('sf-smpf');
   const bonus = parseCoin('sf-bonus');
   const debt  = parseCoin('sf-debt');
-  if(!name||!phone) return toast('กรุณากรอกชื่อและเบอร์โทร','error');
-  if(!CFG.tbl.submissions) return toast('กรุณาตั้งค่า Submissions Table ID ก่อน','error');
+  if(!name||!phone) { toast('กรุณากรอกชื่อและเบอร์โทร','error'); return; }
+  if(!CFG.tbl.submissions) { toast('กรุณาตั้งค่า Submissions Table ID ก่อน','error'); return; }
 
-  // ยืนยันก่อนส่ง
-  if(!confirm('ยืนยันส่งข้อมูล?\nหลังจากส่งแล้วจะไม่สามารถแก้ไขได้')) return;
+  // Custom confirm modal แทน confirm()
+  const confirmed = await showConfirmModal(
+    'ยืนยันการส่งข้อมูล',
+    'หลังจากส่งแล้วจะ<strong>ไม่สามารถแก้ไขได้</strong> กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อน',
+    'ส่งข้อมูล', 'ยกเลิก'
+  );
+  if (!confirmed) return;
 
-  setBtnLoad('sf-btn', true);
+  // แสดง overlay loading
+  showSubmitOverlay('กำลังเตรียมข้อมูล...', 0);
+
   try{
-    // Step 1: อัปโหลดไฟล์ทั้งหมด
+    // Step 1: อัปโหลดไฟล์
     const attachments = [];
-    for(let i=0;i<pendingFiles.length;i++){
+    const total = pendingFiles.length;
+    for(let i=0;i<total;i++){
       const pf = pendingFiles[i];
       pf.status = 'uploading';
       renderQueue();
+      updateSubmitOverlay(`กำลังอัปโหลดไฟล์ ${i+1}/${total}...`, Math.round((i/Math.max(total,1))*60));
       try{
         const res = await API.uploadFile(pf.file);
         const uploaded = Array.isArray(res) ? res[0] : res;
@@ -416,7 +425,8 @@ async function submitForm(){
       renderQueue();
     }
 
-    // Step 2: บันทึกข้อมูลลง Submissions Table
+    // Step 2: บันทึกข้อมูล
+    updateSubmitOverlay('กำลังบันทึกข้อมูล...', 75);
     await API.createSubmission({
       member_email:    AUTH.user?.email||'',
       full_name:       name,
@@ -431,12 +441,70 @@ async function submitForm(){
       submitted_at:    new Date().toISOString()
     });
 
+    updateSubmitOverlay('ส่งข้อมูลสำเร็จ! ✅', 100);
+    await sleep(900);
+    hideSubmitOverlay();
     toast('ส่งข้อมูลสำเร็จ!','success');
     pendingFiles = [];
-    await loadSubmitPage(); // reload → แสดง summary
-  }catch(e){ toast('ส่งไม่สำเร็จ: '+e.message,'error'); }
-  finally{ setBtnLoad('sf-btn', false, 'ยืนยันส่งข้อมูล'); icons(); }
+    await loadSubmitPage();
+  }catch(e){
+    hideSubmitOverlay();
+    toast('ส่งไม่สำเร็จ: '+e.message,'error');
+  }
+  setBtnLoad('sf-btn', false, '<i data-lucide="send"></i> ยืนยันส่งข้อมูล');
+  icons();
 }
+
+/* ── Custom Confirm Modal ── */
+function showConfirmModal(title, msg, okLabel, cancelLabel){
+  return new Promise(resolve => {
+    const el = document.createElement('div');
+    el.id = 'confirm-modal';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease';
+    el.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:360px;box-shadow:0 32px 64px rgba(0,0,0,.6)">
+        <div style="font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:12px">${title}</div>
+        <div style="font-size:14px;color:var(--text-s);line-height:1.6;margin-bottom:24px">${msg}</div>
+        <div style="display:flex;gap:10px">
+          <button id="cm-cancel" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text-s);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font)">${cancelLabel}</button>
+          <button id="cm-ok" style="flex:1;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--green),var(--green-d));color:#030E07;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);box-shadow:0 4px 16px rgba(34,197,94,.3)">${okLabel}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+    const cleanup = (val) => { el.remove(); resolve(val); };
+    el.querySelector('#cm-ok').onclick     = () => cleanup(true);
+    el.querySelector('#cm-cancel').onclick = () => cleanup(false);
+    el.onclick = (e) => { if(e.target===el) cleanup(false); };
+  });
+}
+
+/* ── Submit Progress Overlay ── */
+function showSubmitOverlay(msg, pct){
+  let el = qs('submit-overlay');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'submit-overlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(6,13,16,.9);z-index:4000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;backdrop-filter:blur(8px)';
+    el.innerHTML = `
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(34,197,94,.1);border:2px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center">
+        <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
+      </div>
+      <div id="so-msg" style="font-family:var(--font-h);font-size:16px;font-weight:600;color:var(--text)">${msg}</div>
+      <div style="width:240px;height:6px;background:var(--surface);border-radius:3px;overflow:hidden">
+        <div id="so-bar" style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--green-d),var(--green));border-radius:3px;transition:width .4s ease"></div>
+      </div>
+      <div id="so-pct" style="font-size:12px;color:var(--text-s)">${pct}%</div>`;
+    document.body.appendChild(el);
+  }
+}
+function updateSubmitOverlay(msg, pct){
+  const el = qs('submit-overlay'); if(!el) return;
+  const m = qs('so-msg'); if(m) m.textContent = msg;
+  const b = qs('so-bar'); if(b) b.style.width = pct+'%';
+  const p = qs('so-pct'); if(p) p.textContent = pct+'%';
+}
+function hideSubmitOverlay(){ qs('submit-overlay')?.remove(); }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
 
 /* ================================================
@@ -460,34 +528,133 @@ async function submitForm(){
 #bottom-nav{
   display:none;position:fixed;bottom:0;left:0;right:0;
   height:68px;
-  background:rgba(6,13,16,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-top:1px solid rgba(22,53,69,.8);
+  background:rgba(6,13,16,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-top:1px solid rgba(22,53,69,.6);
   z-index:100;
   padding-bottom:env(safe-area-inset-bottom);
-  box-shadow:0 -8px 32px rgba(0,0,0,.4);
+  box-shadow:0 -4px 24px rgba(0,0,0,.5);
 }
-.bnav-inner{display:flex;height:100%;align-items:center;padding:0 4px}
+.bnav-inner{display:flex;height:100%;align-items:center;padding:0 8px}
 .bnav-item{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:4px;cursor:pointer;color:var(--text-s);transition:all .2s ease;
+  gap:4px;cursor:pointer;color:var(--text-s);transition:color .2s ease;
   font-size:9.5px;font-weight:600;padding:0 2px;position:relative;
-  letter-spacing:.3px;
-  -webkit-tap-highlight-color:transparent;
+  letter-spacing:.3px;-webkit-tap-highlight-color:transparent;user-select:none;
 }
-.bnav-item .bnav-icon-wrap{
-  width:40px;height:28px;border-radius:14px;
+.bnav-icon-wrap{
+  width:44px;height:30px;border-radius:15px;
   display:flex;align-items:center;justify-content:center;
-  transition:all .25s ease;position:relative;
+  transition:all .25s ease;position:relative;overflow:hidden;
 }
 .bnav-item.active .bnav-icon-wrap{
   background:rgba(34,197,94,.15);
-  box-shadow:0 0 12px rgba(34,197,94,.2);
+  box-shadow:0 0 14px rgba(34,197,94,.25);
 }
 .bnav-item.active{color:var(--green)}
-.bnav-item svg{width:20px;height:20px;transition:transform .2s ease}
-.bnav-item.active svg{transform:scale(1.1)}
-.bnav-item span{transition:all .2s;opacity:.7}
+.bnav-item.active svg{filter:drop-shadow(0 0 4px rgba(34,197,94,.5))}
+.bnav-item svg{width:20px;height:20px;transition:all .2s ease}
+.bnav-item span{transition:all .2s;opacity:.65;font-size:9px}
 .bnav-item.active span{opacity:1}
+
+/* Ripple effect on tap */
+.bnav-item::after{
+  content:'';position:absolute;top:50%;left:50%;
+  width:0;height:0;border-radius:50%;
+  background:rgba(34,197,94,.2);
+  transform:translate(-50%,-50%);
+  transition:width .4s ease,height .4s ease,opacity .4s ease;
+  opacity:0;pointer-events:none;
+}
+.bnav-item.tapped::after{width:80px;height:80px;opacity:0}
+
+/* Center Menu Button */
+.bnav-menu-btn{
+  flex:0 0 60px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:4px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;user-select:none;position:relative;
+}
+.bnav-menu-circle{
+  width:46px;height:46px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green),var(--green-d));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(34,197,94,.4);
+  transition:all .25s ease;
+  position:relative;overflow:hidden;
+}
+.bnav-menu-circle::before{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.25) 0%,transparent 70%);
+  opacity:0;transition:opacity .2s;
+}
+.bnav-menu-btn:active .bnav-menu-circle{transform:scale(.92);box-shadow:0 2px 8px rgba(34,197,94,.3)}
+.bnav-menu-btn:active .bnav-menu-circle::before{opacity:1}
+.bnav-menu-circle svg{width:22px;height:22px;color:#030E07;transition:transform .3s ease}
+.bnav-menu-circle.open svg{transform:rotate(90deg)}
+.bnav-menu-label{font-size:9px;font-weight:600;color:var(--text-s);letter-spacing:.3px}
+
+/* ── MENU DRAWER (Bottom Sheet) ── */
+#menu-drawer{
+  display:none;position:fixed;inset:0;z-index:200;
+}
+#menu-drawer.open{display:block}
+#menu-backdrop{
+  position:absolute;inset:0;background:rgba(0,0,0,.6);
+  animation:bdIn .25s ease;
+}
+@keyframes bdIn{from{opacity:0}to{opacity:1}}
+#menu-sheet{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--surface);
+  border-radius:24px 24px 0 0;
+  border-top:1px solid var(--border);
+  padding:12px 0 calc(80px + env(safe-area-inset-bottom));
+  animation:sheetUp .3s cubic-bezier(.32,.72,0,1);
+  box-shadow:0 -16px 64px rgba(0,0,0,.6);
+}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes sheetDown{from{transform:translateY(0)}to{transform:translateY(100%)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.sheet-handle{
+  width:40px;height:4px;border-radius:2px;background:var(--border);
+  margin:0 auto 16px;
+}
+.sheet-title{
+  font-family:var(--font-h);font-size:13px;font-weight:700;
+  color:var(--text-s);letter-spacing:1px;text-transform:uppercase;
+  padding:0 20px 10px;
+}
+.sheet-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:4px;padding:0 12px;
+}
+.sheet-item{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:14px 8px;border-radius:16px;cursor:pointer;
+  transition:all .2s ease;color:var(--text-s);
+  font-size:11px;font-weight:600;text-align:center;
+  -webkit-tap-highlight-color:transparent;position:relative;overflow:hidden;
+}
+.sheet-item:active,.sheet-item:hover{background:rgba(34,197,94,.06);color:var(--text)}
+.sheet-item.active{color:var(--green)}
+.sheet-item-icon{
+  width:48px;height:48px;border-radius:14px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s ease;
+}
+.sheet-item.active .sheet-item-icon{
+  background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.25);
+  box-shadow:0 4px 16px rgba(34,197,94,.2);
+}
+.sheet-item svg{width:22px;height:22px}
+.sheet-item.active svg{filter:drop-shadow(0 0 5px rgba(34,197,94,.6))}
+
+/* Glow pulse on active sheet item */
+@keyframes glowPulse{
+  0%,100%{box-shadow:0 4px 16px rgba(34,197,94,.2)}
+  50%{box-shadow:0 4px 24px rgba(34,197,94,.45)}
+}
+.sheet-item.active .sheet-item-icon{animation:glowPulse 2s ease infinite}
 
 /* ================================================
    CONFIG MODAL
@@ -1064,32 +1231,76 @@ async function submitForm(){
 <!-- Bottom Nav (Mobile) -->
 <nav id="bottom-nav">
   <div class="bnav-inner">
-    <div class="bnav-item active" id="bnav-dashboard" onclick="navigate('dashboard')">
+    <div class="bnav-item active" id="bnav-dashboard" onclick="bnavTap(this,'dashboard')">
       <div class="bnav-icon-wrap"><i data-lucide="layout-dashboard"></i></div>
       <span>หน้าหลัก</span>
     </div>
-    <div class="bnav-item" id="bnav-ebooks" onclick="navigate('ebooks')">
+    <div class="bnav-item" id="bnav-ebooks" onclick="bnavTap(this,'ebooks')">
       <div class="bnav-icon-wrap"><i data-lucide="book-open"></i></div>
       <span>E-Books</span>
     </div>
-    <div class="bnav-item" id="bnav-qr" onclick="navigate('qr')">
-      <div class="bnav-icon-wrap"><i data-lucide="qr-code"></i></div>
-      <span>QR</span>
+
+    <!-- Center Menu Button -->
+    <div class="bnav-menu-btn" id="bnav-menu-btn" onclick="toggleMenuDrawer()">
+      <div class="bnav-menu-circle" id="bnav-menu-circle">
+        <i data-lucide="menu"></i>
+      </div>
+      <span class="bnav-menu-label">เมนู</span>
     </div>
-    <div class="bnav-item" id="bnav-chat" onclick="navigate('chat')">
+
+    <div class="bnav-item" id="bnav-chat" onclick="bnavTap(this,'chat')">
       <div class="bnav-icon-wrap"><i data-lucide="message-circle"></i></div>
       <span>แชท</span>
     </div>
-    <div class="bnav-item" id="bnav-submit" onclick="navigate('submit')">
-      <div class="bnav-icon-wrap"><i data-lucide="clipboard-list"></i></div>
-      <span>กรอกข้อมูล</span>
-    </div>
-    <div class="bnav-item" id="bnav-profile" onclick="navigate('profile')">
+    <div class="bnav-item" id="bnav-profile" onclick="bnavTap(this,'profile')">
       <div class="bnav-icon-wrap"><i data-lucide="user"></i></div>
       <span>โปรไฟล์</span>
     </div>
   </div>
 </nav>
+
+<!-- Menu Drawer -->
+<div id="menu-drawer">
+  <div id="menu-backdrop" onclick="closeMenuDrawer()"></div>
+  <div id="menu-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">เมนูทั้งหมด</div>
+    <div class="sheet-grid">
+      <div class="sheet-item" id="smenu-dashboard" onclick="sheetNav('dashboard')">
+        <div class="sheet-item-icon"><i data-lucide="layout-dashboard"></i></div>
+        <span>หน้าหลัก</span>
+      </div>
+      <div class="sheet-item" id="smenu-ebooks" onclick="sheetNav('ebooks')">
+        <div class="sheet-item-icon"><i data-lucide="book-open"></i></div>
+        <span>E-Books</span>
+      </div>
+      <div class="sheet-item" id="smenu-qr" onclick="sheetNav('qr')">
+        <div class="sheet-item-icon"><i data-lucide="qr-code"></i></div>
+        <span>QR</span>
+      </div>
+      <div class="sheet-item" id="smenu-payment" onclick="sheetNav('payment')">
+        <div class="sheet-item-icon"><i data-lucide="credit-card"></i></div>
+        <span>ชำระเงิน</span>
+      </div>
+      <div class="sheet-item" id="smenu-chat" onclick="sheetNav('chat')">
+        <div class="sheet-item-icon"><i data-lucide="message-circle"></i></div>
+        <span>แชท</span>
+      </div>
+      <div class="sheet-item" id="smenu-submit" onclick="sheetNav('submit')">
+        <div class="sheet-item-icon"><i data-lucide="clipboard-list"></i></div>
+        <span>กรอกข้อมูล</span>
+      </div>
+      <div class="sheet-item" id="smenu-analytics" onclick="sheetNav('analytics')">
+        <div class="sheet-item-icon"><i data-lucide="bar-chart-2"></i></div>
+        <span>Analytics</span>
+      </div>
+      <div class="sheet-item" id="smenu-profile" onclick="sheetNav('profile')">
+        <div class="sheet-item-icon"><i data-lucide="user"></i></div>
+        <span>โปรไฟล์</span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ================================================
      CONFIG MODAL
@@ -1167,7 +1378,7 @@ let CFG = {
   token: '',
   base:  'pbimhqp73ffojky',
   tbl:{ books:'mnd6xqhpwkbjkuc', chat:'mzsb9sptl4jg132', pay:'mkguyxleqyds81x',
-        members:'mxo9vs5ktvm5oup', submissions:'' },
+        members:'mxo9vs5ktvm5oup', submissions:'mxbzsdqb34h7ulw' },
   gb:{ token:'', bg:'' }
 };
 
@@ -1380,14 +1591,19 @@ function navigate(page){
   const navIds = ['dashboard','ebooks','qr','payment','chat','analytics','submit','profile'];
   navIds.forEach(id=>{
     qs('snav-'+id)?.classList.toggle('active', id===page);
+  });
+
+  // Update bottom nav 4 items
+  ['dashboard','ebooks','chat','profile'].forEach(id=>{
     qs('bnav-'+id)?.classList.toggle('active', id===page);
   });
 
-  // Hide chat badge when entering chat
-  if(page==='chat'){
-    qs('chat-badge').style.display='none';
-    loadChat(); scrollBottom();
-  }
+  // Update sheet menu active state
+  ['dashboard','ebooks','qr','payment','chat','analytics','submit','profile'].forEach(id=>{
+    qs('smenu-'+id)?.classList.toggle('active', id===page);
+  });
+
+  if(page==='chat'){ qs('chat-badge').style.display='none'; loadChat(); scrollBottom(); }
   if(page==='ebooks') loadEbooks();
   if(page==='payment') loadPayHist();
   if(page==='qr') startQR();
@@ -1395,6 +1611,41 @@ function navigate(page){
   if(page==='submit') loadSubmitPage();
 
   icons();
+}
+
+/* ── Bottom Nav Tap (ripple) ── */
+function bnavTap(el, page){
+  el.classList.add('tapped');
+  setTimeout(()=>el.classList.remove('tapped'), 400);
+  navigate(page);
+}
+
+/* ── Menu Drawer ── */
+function toggleMenuDrawer(){
+  const d = qs('menu-drawer');
+  const c = qs('bnav-menu-circle');
+  if(d.classList.contains('open')){ closeMenuDrawer(); }
+  else {
+    d.classList.add('open');
+    c.classList.add('open');
+    icons();
+  }
+}
+function closeMenuDrawer(){
+  const d = qs('menu-drawer');
+  const c = qs('bnav-menu-circle');
+  const sheet = qs('menu-sheet');
+  if(!d.classList.contains('open')) return;
+  sheet.style.animation='sheetDown .25s cubic-bezier(.32,.72,0,1) forwards';
+  setTimeout(()=>{
+    d.classList.remove('open');
+    c.classList.remove('open');
+    sheet.style.animation='';
+  }, 240);
+}
+function sheetNav(page){
+  closeMenuDrawer();
+  setTimeout(()=>navigate(page), 120);
 }
 
 function switchTab(t){
