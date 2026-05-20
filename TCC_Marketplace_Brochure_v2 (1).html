@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TCC Marketplace — แนะนำโครงการ</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ─── VARIABLES ─────────────────────────────────────────── */
+:root {
+  --gold:    #F0B90B;
+  --gold2:   #D4A20A;
+  --dark:    #0B0E11;
+  --dark2:   #1E2329;
+  --dark3:   #2B3139;
+  --dark4:   #161A1E;
+  --white:   #FFFFFF;
+  --green:   #0ECB81;
+  --red:     #F6465D;
+  --blue:    #1890FF;
+  --purple:  #8B5CF6;
+  --gray:    #848E9C;
+  --lgray:   #C0C4CC;
+  --gold-bg: rgba(240,185,11,0.08);
+  --green-bg:rgba(14,203,129,0.08);
+  --blue-bg: rgba(24,144,255,0.08);
+  --purple-bg:rgba(139,92,246,0.08);
+  --red-bg:  rgba(246,70,93,0.08);
+}
+
+/* ─── RESET & BASE ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: var(--dark);
+  color: var(--white);
+  font-size: 15px;
+  line-height: 1.6;
+}
+::selection { background: var(--gold); color: var(--dark); }
+
+/* ─── SCROLLBAR ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--dark2); }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+
+/* ─── TYPOGRAPHY ────────────────────────────────────────── */
+h1 { font-size: 2.6rem; font-weight: 800; letter-spacing: -0.5px; }
+h2 { font-size: 1.6rem; font-weight: 700; }
+h3 { font-size: 1.1rem; font-weight: 700; }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+
+/* ─── LAYOUT ────────────────────────────────────────────── */
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ─── NAV ───────────────────────────────────────────────── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(11,14,17,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--dark3);
+  padding: 0 24px;
+}
+.nav-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-logo .ring {
+  width: 34px; height: 34px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(240,185,11,0.08);
+  font-weight: 800; font-size: 11px;
+  color: var(--gold);
+}
+.nav-logo span { font-weight: 700; font-size: 15px; color: var(--white); }
+.nav-links { display: flex; gap: 4px; }
+.nav-links a {
+  font-size: 13px; color: var(--gray);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.nav-links a:hover { color: var(--gold); background: var(--gold-bg); }
+.nav-cta {
+  background: var(--gold);
+  color: var(--dark);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Sarabun', sans-serif;
+  transition: all 0.2s;
+}
+.nav-cta:hover { background: var(--gold2); transform: translateY(-1px); }
+
+/* ─── TOP GOLD BAR ──────────────────────────────────────── */
+.top-bar { height: 4px; background: linear-gradient(90deg, var(--gold), var(--gold2), var(--gold)); }
+
+/* ─── HERO ──────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  padding: 80px 0 60px;
+  text-align: center;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -100px; right: -150px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(240,185,11,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -50px; left: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(14,203,129,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-logo {
+  width: 80px; height: 80px;
+  border: 2.5px solid var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 28px;
+  background: var(--gold-bg);
+  font-size: 24px; font-weight: 800; color: var(--gold);
+  position: relative;
+  animation: spin-ring 12s linear infinite;
+}
+@keyframes spin-ring {
+  0% { box-shadow: 0 0 0 0 rgba(240,185,11,0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(240,185,11,0); }
+  100% { box-shadow: 0 0 0 0 rgba(240,185,11,0); }
+}
+.hero h1 { color: var(--white); margin-bottom: 8px; }
+.hero h1 span { color: var(--gold); }
+.hero-divider {
+  width: 120px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 16px auto;
+}
+.hero-tagline {
+  font-size: 1.15rem; font-weight: 600;
+  color: var(--gold); margin-bottom: 10px;
+}
+.hero-sub { font-size: 0.95rem; color: var(--lgray); margin-bottom: 32px; }
+
+.pill-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 40px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600;
+  padding: 5px 14px; border-radius: 20px;
+  border: 1px solid;
+}
+.pill-gold  { background: var(--gold-bg);   color: var(--gold);   border-color: rgba(240,185,11,0.3); }
+.pill-green { background: var(--green-bg);  color: var(--green);  border-color: rgba(14,203,129,0.3); }
+.pill-blue  { background: var(--blue-bg);   color: var(--blue);   border-color: rgba(24,144,255,0.3); }
+.pill-purple{ background: var(--purple-bg); color: var(--purple); border-color: rgba(139,92,246,0.3); }
+
+/* ─── STAT CARDS ────────────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.stat-card {
+  background: var(--dark2);
+  border: 1px solid var(--dark3);
+  border-radius: 14px;
+  padding: 24px 20px;
+  text-align: center;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.stat-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+.stat-val { font-size: 2rem; font-weight: 800; }
+.stat-label { font-size: 12px; color: var(--gray); margin-top: 4px; }
+
+/* ─── STEPS ─────────────────────────────────────────────── */
+.steps-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-bottom: 50px;
+  position: relative;
+}
+.steps-row::before {
+  content: '';
+  position: absolute;
+  top: 20px; left: 20px; right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), var(--dark3), var(--dark3), var(--dark3), var(--gold));
+}
+.step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+.step-num {
+  width: 40px; height: 40px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  background: var(--gold-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: var(--gold);
+}
+.step-label { font-size: 12px; font-weight: 700; color: var(--white); text-align: center; }
+.step-sub { font-size: 11px; color: var(--gray); text-align: center; }
+
+/* ─── SECTION HEADERS ───────────────────────────────────── */
+.section { padding: 50px 0 30px; }
+.section-header {
+  border-left: 3px solid var(--gold);
+  padding: 14px 20px;
+  background: var(--gold-bg);
+  border-radius: 0 12px 12px 0;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.section-header.green { border-color: var(--green); background: var(--green-bg); }
+.section-header.blue  { border-color: var(--blue);  background: var(--blue-bg); }
+.section-header.purple{ border-color: var(--purple);background: var(--purple-bg); }
+.section-title { font-size: 1.15rem; font-weight: 700; }
+.section-sub { font-size: 13px; color: var(--gray); margin-top: 3px; }
+.section-badge {
+  font-size: 1.4rem; font-weight: 800;
+  padding: 4px 14px;
+  border-radius: 8px;
+}
+
+/* ─── FUNDING FREE PLANS ────────────────────────────────── */
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.plan-card {
+  border-radius: 16px;
+  padding: 24px 20px;
+  border: 1.5px solid;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.plan-card:hover { transform: translateY(-4px); }
+.plan-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  opacity: 0.08;
+}
+.plan-card.a { background: var(--blue-bg);   border-color: rgba(24,144,255,0.35); }
+.plan-card.a::before { background: var(--blue); }
+.plan-card.b { background: var(--gold-bg);   border-color: rgba(240,185,11,0.35); }
+.plan-card.b::before { background: var(--gold); }
+.plan-card.c { background: var(--green-bg);  border-color: rgba(14,203,129,0.35); }
+.plan-card.c::before { background: var(--green); }
+
+.plan-letter { font-size: 3rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+.plan-name   { font-size: 13px; font-weight: 700; color: var(--white); }
+.plan-tag    { font-size: 11px; color: var(--gray); margin-bottom: 16px; }
+.plan-divider { height: 1px; background: var(--dark3); margin: 12px 0; }
+.plan-pct    { font-size: 3.2rem; font-weight: 800; line-height: 1; }
+.plan-per    { font-size: 12px; color: var(--gray); margin-bottom: 16px; }
+.plan-rows   { display: flex; flex-direction: column; gap: 8px; }
+.plan-row    { display: flex; justify-content: space-between; font-size: 12px; }
+.plan-row-label { color: var(--gray); }
+.plan-row-val   { font-weight: 700; color: var(--white); }
+.plan-example {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--gray);
+}
+.plan-example span { font-weight: 700; }
+
+/* ─── RIGHTS BOX ────────────────────────────────────────── */
+.rights-box {
+  background: var(--dark2);
+  border: 1px solid var(--dark3);
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-bottom: 28px;
+}
+.rights-title { font-size: 1rem; font-weight: 700; color: var(--gold); margin-bottom: 6px; }
+.rights-sub { font-size: 13px; color: var(--gray); margin-bottom: 18px; }
+.rights-dots { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.rights-dot {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; color: var(--dark);
+}
+.rights-arrow { font-size: 20px; color: var(--gray); }
+.rights-flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+.flow-chip {
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ─── BAR CHART ─────────────────────────────────────────── */
+.chart-title { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 16px; }
+.chart-row   { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.chart-label { font-size: 12px; color: var(--gray); width: 54px; text-align: right; flex-shrink: 0; }
+.chart-bar-wrap { flex: 1; height: 28px; background: var(--dark3); border-radius: 6px; overflow: hidden; position: relative; }
+.chart-bar   { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; font-size: 11px; font-weight: 700; color: var(--dark); transition: width 0.8s ease; }
+.chart-info  { font-size: 12px; color: var(--gray); width: 110px; flex-shrink: 0; }
+
+/* ─── TWO COLUMN ────────────────────────────────────────── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* ─── PAYOUT CARDS ──────────────────────────────────────── */
+.payout-card {
+  border-radius: 14px;
+  padding: 22px;
+  border: 1.5px solid;
+  transition: transform 0.2s;
+}
+.payout-card:hover { transform: translateY(-3px); }
+.payout-card.blue  { background: var(--blue-bg);  border-color: rgba(24,144,255,0.4); }
+.payout-card.green { background: var(--green-bg); border-color: rgba(14,203,129,0.4); }
+.payout-day-badge {
+  display: inline-block;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+.payout-pct { font-size: 3rem; font-weight: 800; line-height: 1; }
+.payout-of  { font-size: 13px; color: var(--lgray); margin-bottom: 10px; }
+.payout-note { font-size: 12px; margin-bottom: 4px; }
+.payout-sub  { font-size: 11px; color: var(--gray); }
+
+/* ─── SELLER STEPS ──────────────────────────────────────── */
+.seller-steps { display: flex; flex-direction: column; gap: 0; }
+.seller-step  { display: flex; gap: 14px; align-items: flex-start; }
+.step-left    { display: flex; flex-direction: column; align-items: center; }
+.step-circle  { width: 30px; height: 30px; border-radius: 50%; background: var(--gold-bg); border: 1.5px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--gold); flex-shrink: 0; }
+.step-line    { width: 1.5px; height: 24px; background: var(--dark3); margin: 3px 0; }
+.step-content { padding-bottom: 10px; }
+.step-content .label { font-size: 13px; font-weight: 700; color: var(--white); }
+.step-content .desc  { font-size: 12px; color: var(--gray); }
+
+/* ─── EXAMPLE TABLE ─────────────────────────────────────── */
+.example-table {
+  background: var(--dark2);
+  border: 1px solid var(--dark3);
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 16px;
+}
+.example-title { font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
+.example-row   { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--dark3); font-size: 13px; }
+.example-row:last-child { border-bottom: none; }
+.example-row .opt { font-weight: 700; font-size: 12px; }
+.example-row .got { font-weight: 700; }
+.example-row .note { font-size: 11px; color: var(--gray); }
+
+/* ─── REFERRAL CARDS ────────────────────────────────────── */
+.ref-card {
+  border-radius: 14px;
+  padding: 22px;
+  border: 1.5px solid;
+  transition: transform 0.2s;
+}
+.ref-card:hover { transform: translateY(-3px); }
+.ref-card.buyer  { background: var(--blue-bg);   border-color: rgba(24,144,255,0.4); }
+.ref-card.seller { background: var(--gold-bg);   border-color: rgba(240,185,11,0.4); }
+.ref-card-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.ref-pct  { font-size: 3rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+.ref-desc { font-size: 12px; color: var(--lgray); margin-bottom: 6px; }
+.ref-note { font-size: 11px; color: var(--gray); }
+
+/* ─── REF EXAMPLE ───────────────────────────────────────── */
+.ref-example {
+  background: var(--dark2);
+  border: 1px solid var(--dark3);
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 16px;
+}
+.ref-example-title { font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
+.ref-row   { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--dark3); font-size: 13px; }
+.ref-row:last-child { border-bottom: none; }
+.ref-row .who  { font-size: 12px; color: var(--gray); }
+.ref-row .amount { font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+
+/* ─── REF CODE BOX ──────────────────────────────────────── */
+.ref-code-box {
+  background: var(--purple-bg);
+  border: 1px solid rgba(139,92,246,0.35);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.ref-code-label { font-size: 11px; color: var(--gray); }
+.ref-code-value { font-size: 1.3rem; font-weight: 800; color: var(--purple); font-family: 'IBM Plex Mono', monospace; }
+.ref-code-actions { display: flex; gap: 8px; }
+.ref-btn {
+  background: var(--dark2);
+  border: 1px solid var(--dark3);
+  color: var(--gray);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'Sarabun', sans-serif;
+  transition: all 0.2s;
+}
+.ref-btn:hover { border-color: var(--purple); color: var(--purple); }
+
+/* ─── WALLET GRID ───────────────────────────────────────── */
+.wallet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.wallet-card {
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.wallet-card:hover { transform: translateY(-3px); }
+.wallet-card.green  { background: var(--green-bg);  border-color: rgba(14,203,129,0.25); }
+.wallet-card.gold   { background: var(--gold-bg);   border-color: rgba(240,185,11,0.25); }
+.wallet-card.purple { background: var(--purple-bg); border-color: rgba(139,92,246,0.25); }
+.wallet-card.blue   { background: var(--blue-bg);   border-color: rgba(24,144,255,0.25); }
+.wallet-card:hover.green  { border-color: var(--green); }
+.wallet-card:hover.gold   { border-color: var(--gold); }
+.wallet-card:hover.purple { border-color: var(--purple); }
+.wallet-card:hover.blue   { border-color: var(--blue); }
+.wallet-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.wallet-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.wallet-name { font-size: 13px; font-weight: 700; }
+.wallet-desc { font-size: 11px; color: var(--gray); margin-bottom: 10px; }
+.wallet-divider { height: 1px; background: var(--dark3); margin: 10px 0; }
+.wallet-address { font-size: 10px; color: var(--gray); font-family: 'IBM Plex Mono', monospace; }
+.wallet-balance-label { font-size: 10px; color: var(--gray); }
+.wallet-balance-val   { font-size: 1.1rem; font-weight: 700; font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
+.wallet-footer { font-size: 10px; color: var(--gray); margin-top: 6px; }
+
+/* ─── DEPOSIT FLOW ──────────────────────────────────────── */
+.deposit-flow {
+  background: var(--dark2);
+  border: 1px solid var(--dark3);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+}
+.deposit-title { font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 14px; }
+.flow-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.flow-chip-item {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 600;
+  border: 1px solid;
+}
+.flow-chip-item.green  { background: var(--green-bg);  color: var(--green);  border-color: rgba(14,203,129,0.3); }
+.flow-chip-item.gray   { background: var(--dark3);     color: var(--gray);   border-color: transparent; }
+.flow-arrow { color: var(--gray); font-size: 16px; }
+
+/* ─── SECURITY ──────────────────────────────────────────── */
+.security-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 40px;
+}
+.security-item {
+  background: var(--dark2);
+  border: 1px solid var(--dark3);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  transition: border-color 0.2s;
+}
+.security-item:hover { border-color: var(--gold); }
+.security-icon { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.security-feat { font-size: 12px; font-weight: 700; color: var(--white); }
+.security-desc { font-size: 11px; color: var(--gray); margin-top: 2px; }
+
+/* ─── CTA ───────────────────────────────────────────────── */
+.cta-section {
+  background: linear-gradient(135deg, rgba(240,185,11,0.1), rgba(240,185,11,0.04));
+  border: 1.5px solid rgba(240,185,11,0.3);
+  border-radius: 20px;
+  padding: 48px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(240,185,11,0.08), transparent 60%);
+  pointer-events: none;
+}
+.cta-title { font-size: 1.8rem; font-weight: 800; color: var(--gold); margin-bottom: 10px; }
+.cta-sub   { font-size: 14px; color: var(--lgray); margin-bottom: 32px; }
+.cta-steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; max-width: 600px; margin: 0 auto 28px; }
+.cta-step  {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(240,185,11,0.2);
+  border-radius: 12px;
+  padding: 18px;
+}
+.cta-num   { width: 32px; height: 32px; border-radius: 50%; background: var(--gold); color: var(--dark); font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+.cta-step-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.cta-step-sub   { font-size: 11px; color: var(--gray); }
+.cta-btn {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--dark);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 40px;
+  font-size: 15px; font-weight: 800;
+  cursor: pointer;
+  font-family: 'Sarabun', sans-serif;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.cta-btn:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(240,185,11,0.3); }
+
+/* ─── FOOTER ────────────────────────────────────────────── */
+footer {
+  background: var(--dark2);
+  border-top: 1px solid var(--dark3);
+  padding: 28px 24px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--gray);
+  margin-top: 60px;
+}
+footer strong { color: var(--gold); }
+
+/* ─── UTILS ─────────────────────────────────────────────── */
+.gold   { color: var(--gold); }
+.green  { color: var(--green); }
+.blue   { color: var(--blue); }
+.purple { color: var(--purple); }
+.red    { color: var(--red); }
+.gray   { color: var(--gray); }
+.white  { color: var(--white); }
+.bold   { font-weight: 700; }
+
+/* ─── RESPONSIVE ────────────────────────────────────────── */
+@media (max-width: 640px) {
+  h1 { font-size: 1.8rem; }
+  .stat-grid, .plan-grid, .security-grid, .cta-steps { grid-template-columns: 1fr 1fr; }
+  .two-col, .wallet-grid { grid-template-columns: 1fr; }
+  .steps-row { flex-wrap: wrap; gap: 16px; }
+  .steps-row::before { display: none; }
+  nav .nav-links { display: none; }
+}
+@media (max-width: 420px) {
+  .stat-grid, .plan-grid, .security-grid, .cta-steps { grid-template-columns: 1fr; }
+}
+
+/* ─── FUNDING FREE EXPLAIN SECTION ─────────────────────── */
+.ff-explain-section {
+  background: linear-gradient(135deg, rgba(240,185,11,0.06), rgba(139,92,246,0.06));
+  border: 1.5px solid rgba(240,185,11,0.2);
+  border-radius: 20px;
+  padding: 40px 36px;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.ff-explain-section::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(240,185,11,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+.ff-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(240,185,11,0.12);
+  border: 1px solid rgba(240,185,11,0.35);
+  border-radius: 30px;
+  padding: 6px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 18px;
+}
+.ff-hero-badge .dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+.ff-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.ff-title span { color: var(--gold); }
+.ff-subtitle {
+  font-size: 14px;
+  color: var(--lgray);
+  margin-bottom: 36px;
+  max-width: 560px;
+}
+
+/* Flow diagram */
+.ff-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 36px;
+}
+.ff-flow-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.ff-node {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.ff-node-box {
+  width: 100%;
+  padding: 18px 12px;
+  border-radius: 14px;
+  border: 1.5px solid;
+  position: relative;
+}
+.ff-node-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  display: block;
+}
+.ff-node-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+.ff-node-desc {
+  font-size: 11px;
+  color: var(--gray);
+  line-height: 1.5;
+}
+.ff-node-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+  margin-top: 8px;
+}
+
+/* node colors */
+.ff-node-box.blue   { background: var(--blue-bg);   border-color: rgba(24,144,255,0.35); }
+.ff-node-box.purple { background: var(--purple-bg); border-color: rgba(139,92,246,0.35); }
+.ff-node-box.gold   { background: var(--gold-bg);   border-color: rgba(240,185,11,0.35); }
+.ff-node-box.green  { background: var(--green-bg);  border-color: rgba(14,203,129,0.35); }
+.ff-node-box.orange { background: rgba(255,140,0,0.08); border-color: rgba(255,140,0,0.35); }
+
+.ff-node-tag.blue   { background: rgba(24,144,255,0.15);   color: var(--blue); }
+.ff-node-tag.purple { background: rgba(139,92,246,0.15);   color: var(--purple); }
+.ff-node-tag.gold   { background: rgba(240,185,11,0.15);   color: var(--gold); }
+.ff-node-tag.green  { background: rgba(14,203,129,0.15);   color: var(--green); }
+.ff-node-tag.orange { background: rgba(255,140,0,0.15);    color: #FF8C00; }
+
+/* arrows between nodes */
+.ff-arrow-h {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  flex-shrink: 0;
+  width: 36px;
+}
+.ff-arrow-h::after {
+  content: '→';
+  font-size: 20px;
+  color: var(--gold);
+  font-weight: 700;
+}
+.ff-arrow-down {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 36px;
+}
+.ff-arrow-down::after {
+  content: '↓';
+  font-size: 22px;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* Summary box */
+.ff-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.ff-summary-card {
+  background: var(--dark2);
+  border: 1px solid var(--dark3);
+  border-radius: 14px;
+  padding: 20px 16px;
+  text-align: center;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.ff-summary-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+.ff-summary-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+.ff-summary-label { font-size: 11px; color: var(--gray); margin-bottom: 6px; }
+.ff-summary-val { font-size: 1.2rem; font-weight: 800; }
+
+/* Key point banner */
+.ff-key-banner {
+  background: linear-gradient(90deg, rgba(14,203,129,0.1), rgba(14,203,129,0.04));
+  border-left: 3px solid var(--green);
+  border-radius: 0 12px 12px 0;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.ff-key-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.ff-key-title { font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+.ff-key-text { font-size: 12px; color: var(--lgray); line-height: 1.6; }
+
+/* Percent breakdown */
+.ff-pct-box {
+  background: var(--dark2);
+  border: 1px solid var(--dark3);
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+.ff-pct-title { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 16px; }
+.ff-pct-bar-wrap { margin-bottom: 14px; }
+.ff-pct-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.ff-pct-bar-track {
+  height: 10px;
+  background: var(--dark3);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+}
+.ff-pct-seg {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.8s ease;
+}
+.ff-pct-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+}
+.ff-pct-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--gray);
+}
+.ff-legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .ff-explain-section { padding: 28px 20px; }
+  .ff-flow-row { flex-direction: column; gap: 8px; }
+  .ff-arrow-h { width: 100%; height: 28px; }
+  .ff-arrow-h::after { content: '↓'; }
+  .ff-summary-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 420px) {
+  .ff-summary-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── FADE-IN ANIMATION ─────────────────────────────────── */
+.fade-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <a href="https://tradercafeclubthai.tradercafeclub.workers.dev/#register" target="_blank" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;overflow:hidden;border:2px solid var(--gold);background:rgba(240,185,11,0.08);flex-shrink:0;">
+        <img src="https://i.ibb.co/NgQ08PZJ/TCC-Small-1-Logo.png" alt="TCC" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+      </a>
+      <span>TCC Marketplace</span>
+    </div>
+    <div class="nav-links">
+      <a href="#what-is-funding">Funding Free คืออะไร?</a>
+      <a href="#funding">Funding Free</a>
+      <a href="#seller">ผู้ขาย</a>
+      <a href="#referral">Referral</a>
+      <a href="#wallet">Wallet</a>
+    </div>
+    <button class="nav-cta" onclick="window.open('https://tradercafeclubthai.tradercafeclub.workers.dev/#register','_blank')">สมัครสมาชิก</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <section class="hero fade-up">
+    <a href="https://tradercafeclubthai.tradercafeclub.workers.dev/#register" target="_blank" class="hero-logo" style="text-decoration:none;overflow:hidden;padding:0;">
+      <img src="https://i.ibb.co/NgQ08PZJ/TCC-Small-1-Logo.png" alt="TCC" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+    </a>
+    <h1>TCC <span>MARKETPLACE</span></h1>
+    <div class="hero-divider"></div>
+    <p class="hero-tagline">ซื้อสินค้า · รับเงินคืน · สร้างรายได้</p>
+    <p class="hero-sub">แพลตฟอร์มซื้อขายสินค้าด้วย USDT ที่คุณได้รับเงินคืนสูงสุด 100%<br>พร้อมระบบ Referral Commission และ Wallet ระดับ Blockchain</p>
+
+    <div class="pill-row">
+      <span class="pill pill-green">USDT Only</span>
+      <span class="pill pill-gold">KYC Verified</span>
+      <span class="pill pill-blue">Binance-Style Wallet</span>
+      <span class="pill pill-purple">Referral Commission</span>
+      <span class="pill pill-green">Admin Approved</span>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid fade-up">
+      <div class="stat-card">
+        <div class="stat-val gold">100%</div>
+        <div class="stat-label">ได้รับเงินคืนเต็มจำนวน</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val green">5 ครั้ง</div>
+        <div class="stat-label">สิทธิ์ Funding Free/สมาชิก</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val blue">4 Wallets</div>
+        <div class="stat-label">ระบบ Wallet ครบวงจร</div>
+      </div>
+    </div>
+
+    <!-- STEPS -->
+    <div class="steps-row fade-up">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-label">ฝาก USDT</div>
+        <div class="step-sub">เข้า Wallet</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-label">เลือกซื้อสินค้า</div>
+        <div class="step-sub">จากผู้ขายในระบบ</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-label">เลือกแผน</div>
+        <div class="step-sub">Funding Free A/B/C</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-label">รับเงินคืน</div>
+        <div class="step-sub">เข้า Wallet ทุกงวด</div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-label">ถอน USDT</div>
+        <div class="step-sub">ออก External Wallet</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FUNDING FREE EXPLANATION (NEW) -->
+  <section class="section fade-up" id="what-is-funding">
+    <div class="section-header" style="border-color:var(--gold);background:var(--gold-bg);margin-bottom:32px;">
+      <div>
+        <div class="section-title gold">Funding Free คืออะไร?</div>
+        <div class="section-sub">ทำความเข้าใจระบบก่อนเริ่มต้น · โปร่งใส · ตรวจสอบได้ · ขับเคลื่อนด้วย Bitcoin</div>
+      </div>
+      <div style="font-size:2rem;">₿</div>
+    </div>
+
+    <div class="ff-explain-section fade-up">
+      <div class="ff-hero-badge">
+        <span class="dot"></span>
+        ระบบ Funding Free โดย TCC (เทรดเดอร์คาเฟ่คลับ)
+      </div>
+      <div class="ff-title">เงินคืนจาก<span> Bitcoin Fund</span><br>ที่สร้างโดยชุมชนเทรดเดอร์</div>
+      <p class="ff-subtitle">ทุกครั้งที่สมาชิกเทรดในระบบ TCC — ค่าธรรมเนียม 40% จะถูกหักเข้ากองทุน ซื้อ BTC สะสม และกำไรจากกองทุนนั้นจะถูกแจกคืนให้คุณในฐานะ Funding Free</p>
+
+      <!-- FLOW DIAGRAM -->
+      <div class="ff-flow fade-up">
+
+        <!-- Row 1: Source -->
+        <div class="ff-flow-row">
+          <div class="ff-node">
+            <div class="ff-node-box blue">
+              <span class="ff-node-icon">👥</span>
+              <div class="ff-node-title">สมาชิกเทรด</div>
+              <div class="ff-node-desc">สมาชิก TCC ทุกคนที่เข้ามาเทรดในระบบ ทำการซื้อขายสินทรัพย์</div>
+              <span class="ff-node-tag blue">Trading Activity</span>
+            </div>
+          </div>
+          <div class="ff-arrow-h"></div>
+          <div class="ff-node">
+            <div class="ff-node-box purple">
+              <span class="ff-node-icon">💸</span>
+              <div class="ff-node-title">ค่าธรรมเนียมเทรด</div>
+              <div class="ff-node-desc">ระบบหักค่าธรรมเนียมจากทุกการเทรดตามอัตราที่กำหนด</div>
+              <span class="ff-node-tag purple">Trading Fee</span>
+            </div>
+          </div>
+          <div class="ff-arrow-h"></div>
+          <div class="ff-node">
+            <div class="ff-node-box orange">
+              <span class="ff-node-icon">📊</span>
+              <div class="ff-node-title">หัก 40% เข้ากองทุน</div>
+              <div class="ff-node-desc">40% ของค่าธรรมเนียมทั้งหมดถูกสำรองไว้เป็นเงินทุนกองทุน</div>
+              <span class="ff-node-tag orange">40% Reserve</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ff-arrow-down" style="margin-left:calc(66% + 18px);width:40px;"></div>
+
+        <!-- Row 2: BTC Fund -->
+        <div class="ff-flow-row" style="justify-content:flex-end;">
+          <div class="ff-node" style="max-width:33%;">
+            <div class="ff-node-box gold" style="border-color:rgba(240,185,11,0.6);box-shadow:0 0 20px rgba(240,185,11,0.08);">
+              <span class="ff-node-icon">₿</span>
+              <div class="ff-node-title" style="color:var(--gold);">กองทุนซื้อ Bitcoin</div>
+              <div class="ff-node-desc">เงินทุนสำรองถูกนำไปซื้อ BTC สะสมในกองทุน TCC Fund</div>
+              <span class="ff-node-tag gold">TCC Bitcoin Fund</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ff-arrow-down" style="margin-left:calc(66% + 18px);width:40px;"></div>
+
+        <!-- Row 3: Profit & Payout split -->
+        <div class="ff-flow-row" style="justify-content:flex-end;gap:0;">
+          <div class="ff-node" style="max-width:33%;">
+            <div class="ff-node-box gold" style="opacity:0.7;">
+              <span class="ff-node-icon">📈</span>
+              <div class="ff-node-title">กำไรจากกองทุน BTC</div>
+              <div class="ff-node-desc">กองทุนสร้างผลตอบแทนจากการเพิ่มมูลค่าของ Bitcoin</div>
+              <span class="ff-node-tag gold">BTC Profit</span>
+            </div>
+          </div>
+          <div class="ff-arrow-h"></div>
+          <div class="ff-node" style="max-width:33%;">
+            <div class="ff-node-box green" style="border-color:rgba(14,203,129,0.6);box-shadow:0 0 20px rgba(14,203,129,0.08);">
+              <span class="ff-node-icon">🎁</span>
+              <div class="ff-node-title" style="color:var(--green);">Funding Free คืนให้สมาชิก</div>
+              <div class="ff-node-desc">กำไรส่วนหนึ่งถูกจ่ายคืนให้สมาชิกที่ซื้อสินค้าบน TCC Marketplace</div>
+              <span class="ff-node-tag green">คุณได้รับ ✓</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- END FLOW -->
+
+      <!-- KEY BANNER -->
+      <div class="ff-key-banner fade-up">
+        <div class="ff-key-icon">💡</div>
+        <div>
+          <div class="ff-key-title">สรุปใจความสำคัญ</div>
+          <p class="ff-key-text">
+            <strong style="color:var(--white);">Funding Free</strong> คือเงินคืนที่ได้จาก <strong style="color:var(--gold);">กำไรของกองทุน Bitcoin</strong> ซึ่งถูกสร้างขึ้นจาก <strong style="color:var(--blue);">40% ของค่าธรรมเนียมการเทรด</strong> ในระบบ TCC — ไม่ใช่เงินจากสมาชิกคนอื่น แต่มาจากการเติบโตของสินทรัพย์จริง
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PCT BREAKDOWN -->
+    <div class="ff-pct-box fade-up">
+      <div class="ff-pct-title">สัดส่วนค่าธรรมเนียมการเทรดในระบบ TCC</div>
+      <div class="ff-pct-bar-wrap">
+        <div class="ff-pct-bar-label">
+          <span style="color:var(--lgray);">Fee ทั้งหมดจากสมาชิก</span>
+          <span style="color:var(--gold);font-weight:700;">100%</span>
+        </div>
+        <div class="ff-pct-bar-track">
+          <div class="ff-pct-seg" style="width:40%;background:var(--gold);border-radius:10px 0 0 10px;"></div>
+          <div class="ff-pct-seg" style="width:60%;background:var(--dark3);border-radius:0 10px 10px 0;"></div>
+        </div>
+      </div>
+      <div class="ff-pct-legend">
+        <div class="ff-pct-legend-item">
+          <div class="ff-legend-dot" style="background:var(--gold);"></div>
+          <span><strong style="color:var(--gold);">40%</strong> → เข้ากองทุนสำรอง TCC Fund (ซื้อ BTC → สร้างกำไร → จ่าย Funding Free)</span>
+        </div>
+        <div class="ff-pct-legend-item">
+          <div class="ff-legend-dot" style="background:var(--dark3);border:1px solid var(--dark4);"></div>
+          <span><strong style="color:var(--lgray);">60%</strong> → ส่วนอื่นของระบบ (ต้นทุน, พัฒนาระบบ, ค่าดำเนินการ)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="ff-summary-grid fade-up">
+      <div class="ff-summary-card">
+        <span class="ff-summary-icon">👥</span>
+        <div class="ff-summary-label">แหล่งที่มา</div>
+        <div class="ff-summary-val blue" style="font-size:1rem;">ค่า Fee จากนักเทรด</div>
+      </div>
+      <div class="ff-summary-card">
+        <span class="ff-summary-icon">₿</span>
+        <div class="ff-summary-label">กลไกสร้างผลตอบแทน</div>
+        <div class="ff-summary-val gold" style="font-size:1rem;">กองทุน Bitcoin</div>
+      </div>
+      <div class="ff-summary-card">
+        <span class="ff-summary-icon">🎁</span>
+        <div class="ff-summary-label">ผู้ได้รับสิทธิ์</div>
+        <div class="ff-summary-val green" style="font-size:1rem;">ผู้ซื้อสินค้า TCC</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- FUNDING FREE -->
+  <section class="section fade-up" id="funding">
+    <div class="section-header">
+      <div>
+        <div class="section-title gold">ระบบ Funding Free</div>
+        <div class="section-sub">ซื้อสินค้าวันนี้ รับเงินคืนเต็ม 100% ตามแผนที่คุณเลือก</div>
+      </div>
+      <div class="section-badge gold">100%</div>
+    </div>
+
+    <div class="plan-grid">
+      <!-- PLAN A -->
+      <div class="plan-card a">
+        <div class="plan-letter blue">A</div>
+        <div class="plan-name">แผน A — คงที่</div>
+        <div class="plan-tag">รับสม่ำเสมอทุกเดือน</div>
+        <div class="plan-divider"></div>
+        <div class="plan-pct blue">10%</div>
+        <div class="plan-per">ต่อครั้ง</div>
+        <div class="plan-rows">
+          <div class="plan-row">
+            <span class="plan-row-label">จำนวนครั้ง</span>
+            <span class="plan-row-val">10 ครั้ง</span>
+          </div>
+          <div class="plan-row">
+            <span class="plan-row-label">ความถี่</span>
+            <span class="plan-row-val">ทุก 1 เดือน</span>
+          </div>
+          <div class="plan-row">
+            <span class="plan-row-label">ระยะเวลา</span>
+            <span class="plan-row-val blue">10 เดือน</span>
+          </div>
+        </div>
+        <div class="plan-example">ซื้อ 1,000 USDT = <span class="blue">100 USDT × 10 ครั้ง</span></div>
+      </div>
+
+      <!-- PLAN B -->
+      <div class="plan-card b">
+        <div class="plan-letter gold">B</div>
+        <div class="plan-name">แผน B — กลาง</div>
+        <div class="plan-tag">ยอดก้อนกลางทุก 2 เดือน</div>
+        <div class="plan-divider"></div>
+        <div class="plan-pct gold">25%</div>
+        <div class="plan-per">ต่อครั้ง</div>
+        <div class="plan-rows">
+          <div class="plan-row">
+            <span class="plan-row-label">จำนวนครั้ง</span>
+            <span class="plan-row-val">4 ครั้ง</span>
+          </div>
+          <div class="plan-row">
+            <span class="plan-row-label">ความถี่</span>
+            <span class="plan-row-val">ทุก 2 เดือน</span>
+          </div>
+          <div class="plan-row">
+            <span class="plan-row-label">ระยะเวลา</span>
+            <span class="plan-row-val gold">8 เดือน</span>
+          </div>
+        </div>
+        <div class="plan-example">ซื้อ 1,000 USDT = <span class="gold">250 USDT × 4 ครั้ง</span></div>
+      </div>
+
+      <!-- PLAN C -->
+      <div class="plan-card c">
+        <div class="plan-letter green">C</div>
+        <div class="plan-name">แผน C — ก้อนใหญ่</div>
+        <div class="plan-tag">ยอดก้อนใหญ่ทุก 3 เดือน</div>
+        <div class="plan-divider"></div>
+        <div class="plan-pct green">50%</div>
+        <div class="plan-per">ต่อครั้ง</div>
+        <div class="plan-rows">
+          <div class="plan-row">
+            <span class="plan-row-label">จำนวนครั้ง</span>
+            <span class="plan-row-val">2 ครั้ง</span>
+          </div>
+          <div class="plan-row">
+            <span class="plan-row-label">ความถี่</span>
+            <span class="plan-row-val">ทุก 3 เดือน</span>
+          </div>
+          <div class="plan-row">
+            <span class="plan-row-label">ระยะเวลา</span>
+            <span class="plan-row-val green">6 เดือน</span>
+          </div>
+        </div>
+        <div class="plan-example">ซื้อ 1,000 USDT = <span class="green">500 USDT × 2 ครั้ง</span></div>
+      </div>
+    </div>
+
+    <!-- RIGHTS BOX -->
+    <div class="rights-box fade-up">
+      <div class="rights-title">สิทธิ์ Funding Free — 5 ครั้ง/สมาชิก</div>
+      <div class="rights-sub">ใช้ 1 สิทธิ์ต่อ 1 คำสั่งซื้อ · หมดแล้วยื่นขอ Refresh · Admin อนุมัติ = ได้คืน 5 ครั้งใหม่ · วนซ้ำได้ไม่จำกัด</div>
+      <div class="rights-dots">
+        <div class="rights-dot">1</div>
+        <div class="rights-dot">2</div>
+        <div class="rights-dot">3</div>
+        <div class="rights-dot">4</div>
+        <div class="rights-dot">5</div>
+        <span class="rights-arrow" style="margin-left:8px;">→</span>
+        <div class="rights-flow">
+          <span class="flow-chip" style="background:rgba(246,70,93,0.1);color:var(--red);border:1px solid rgba(246,70,93,0.25);">สิทธิ์ = 0</span>
+          <span class="rights-arrow">→</span>
+          <span class="flow-chip" style="background:rgba(240,185,11,0.1);color:var(--gold);border:1px solid rgba(240,185,11,0.25);">ยื่นขอ Refresh</span>
+          <span class="rights-arrow">→</span>
+          <span class="flow-chip" style="background:rgba(24,144,255,0.1);color:var(--blue);border:1px solid rgba(24,144,255,0.25);">Admin อนุมัติ</span>
+          <span class="rights-arrow">→</span>
+          <span class="flow-chip" style="background:rgba(14,203,129,0.1);color:var(--green);border:1px solid rgba(14,203,129,0.25);">ได้สิทธิ์ 5/5 ใหม่</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BAR CHART -->
+    <div class="fade-up">
+      <div class="chart-title">เปรียบเทียบการรับเงินคืน (ซื้อ 1,000 USDT)</div>
+      <div class="chart-row">
+        <div class="chart-label">แผน A</div>
+        <div class="chart-bar-wrap">
+          <div class="chart-bar" style="width:100%;background:var(--blue);">100 USDT × 10 ครั้ง</div>
+        </div>
+        <div class="chart-info blue">= 10 เดือน</div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-label">แผน B</div>
+        <div class="chart-bar-wrap">
+          <div class="chart-bar" style="width:100%;background:var(--gold);">250 USDT × 4 ครั้ง</div>
+        </div>
+        <div class="chart-info gold">= 8 เดือน</div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-label">แผน C</div>
+        <div class="chart-bar-wrap">
+          <div class="chart-bar" style="width:100%;background:var(--green);">500 USDT × 2 ครั้ง</div>
+        </div>
+        <div class="chart-info green">= 6 เดือน</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SELLER -->
+  <section class="section fade-up" id="seller">
+    <div class="section-header">
+      <div>
+        <div class="section-title gold">สำหรับผู้ขายสินค้า</div>
+        <div class="section-sub">ตั้งร้านค้า · ลงสินค้า · รับเงินอัตโนมัติผ่าน Seller Wallet</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- Payout Options -->
+      <div>
+        <h3 style="margin-bottom:14px;color:var(--lgray);">ตัวเลือกรับเงิน</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="payout-card blue">
+            <div class="payout-day-badge" style="background:rgba(24,144,255,0.15);color:var(--blue);">45 วัน</div>
+            <div class="payout-pct blue">90%</div>
+            <div class="payout-of">ของยอดขาย</div>
+            <div class="payout-note red">หัก Marketing Fee 10% → TCC Market Fee</div>
+            <div class="payout-sub">รับเงินเร็ว เหมาะกับผู้ต้องการ Cashflow เร็ว</div>
+          </div>
+          <div class="payout-card green">
+            <div class="payout-day-badge" style="background:rgba(14,203,129,0.15);color:var(--green);">60 วัน</div>
+            <div class="payout-pct green">100%</div>
+            <div class="payout-of">ของยอดขาย</div>
+            <div class="payout-note green">ไม่หักค่า Fee ใดๆ ทั้งสิ้น</div>
+            <div class="payout-sub">รับเงินเต็มจำนวน เหมาะกับผู้ต้องการผลตอบแทนสูงสุด</div>
+          </div>
+        </div>
+        <div class="example-table">
+          <div class="example-title">ตัวอย่าง: ยอดขาย 1,000 USDT</div>
+          <div class="example-row">
+            <span class="opt blue">45 วัน</span>
+            <span class="got blue">ได้รับ 900 USDT</span>
+            <span class="note">Fee 100 USDT → Market Fee</span>
+          </div>
+          <div class="example-row">
+            <span class="opt green">60 วัน</span>
+            <span class="got green">ได้รับ 1,000 USDT</span>
+            <span class="note">ไม่มีค่า Fee</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seller Steps -->
+      <div>
+        <h3 style="margin-bottom:14px;color:var(--lgray);">ขั้นตอนสำหรับผู้ขาย</h3>
+        <div class="seller-steps">
+          <div class="seller-step">
+            <div class="step-left">
+              <div class="step-circle">1</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-content">
+              <div class="label">สมัคร Seller Account + KYC Verify</div>
+              <div class="desc">กรอกข้อมูลร้านค้า ชื่อร้าน โลโก้ หมวดหมู่</div>
+            </div>
+          </div>
+          <div class="seller-step">
+            <div class="step-left">
+              <div class="step-circle">2</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-content">
+              <div class="label">Admin อนุมัติร้านค้า</div>
+              <div class="desc">ระบบแจ้งเตือนผลการอนุมัติทันที</div>
+            </div>
+          </div>
+          <div class="seller-step">
+            <div class="step-left">
+              <div class="step-circle">3</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-content">
+              <div class="label">ลงสินค้า รอ Admin อนุมัติ</div>
+              <div class="desc">ทุกสินค้าต้องผ่านการตรวจสอบก่อนแสดง</div>
+            </div>
+          </div>
+          <div class="seller-step">
+            <div class="step-left">
+              <div class="step-circle">4</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-content">
+              <div class="label">ลูกค้ายืนยันรับสินค้า → เริ่มนับ 45/60 วัน</div>
+              <div class="desc">ระบบนับจากวันที่ลูกค้ากดยืนยันรับสินค้า</div>
+            </div>
+          </div>
+          <div class="seller-step">
+            <div class="step-left">
+              <div class="step-circle">5</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-content">
+              <div class="label">เงินเข้า Seller Wallet อัตโนมัติ</div>
+              <div class="desc">ครบกำหนด → โอนเข้า Wallet ทันที</div>
+            </div>
+          </div>
+          <div class="seller-step">
+            <div class="step-left">
+              <div class="step-circle">6</div>
+            </div>
+            <div class="step-content">
+              <div class="label">ถอน USDT ออก External Wallet</div>
+              <div class="desc">ผ่าน 2FA Verify — รองรับ TRC20 / ERC20</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REFERRAL -->
+  <section class="section fade-up" id="referral">
+    <div class="section-header purple">
+      <div>
+        <div class="section-title purple">ระบบ Referral Commission</div>
+        <div class="section-sub">แนะนำเพื่อน รับค่าคอมมิชชั่นอัตโนมัติทุกงวดที่ผู้ถูกแนะนำได้รับ</div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-bottom:16px;">
+      <div class="ref-card buyer">
+        <div class="ref-card-title blue">แนะนำผู้ซื้อ</div>
+        <div class="ref-pct blue">10%</div>
+        <div class="ref-desc">ของแต่ละงวด Funding Free ที่ผู้ถูกแนะนำรับ</div>
+        <div class="ref-note">• รับพร้อมกันทุกรอบตามแผน A / B / C<br>• จ่ายจาก TCC Fund อัตโนมัติ<br>• รับตลอดทุกคำสั่งซื้อของผู้ถูกแนะนำ</div>
+      </div>
+      <div class="ref-card seller">
+        <div class="ref-card-title gold">แนะนำผู้ขาย</div>
+        <div class="ref-pct gold">10%</div>
+        <div class="ref-desc">ของแต่ละงวดที่ร้านค้าได้รับ Payout</div>
+        <div class="ref-note">• รับทุกครั้งที่ร้านที่แนะนำขายสินค้าได้<br>• จ่ายจาก TCC Fund อัตโนมัติ<br>• ไม่จำกัดจำนวนครั้ง</div>
+      </div>
+    </div>
+
+    <div class="ref-example fade-up">
+      <div class="ref-example-title">ตัวอย่าง: A แนะนำ B ซื้อสินค้า 1,000 USDT เลือกแผน A</div>
+      <div class="ref-row">
+        <span class="who">B ได้รับ Funding Free / เดือน</span>
+        <span class="amount blue">100 USDT</span>
+      </div>
+      <div class="ref-row">
+        <span class="who">A ได้รับ Commission / เดือน (10% ของ 100)</span>
+        <span class="amount green">10 USDT</span>
+      </div>
+      <div class="ref-row">
+        <span class="who">A รับรวมตลอด 10 เดือน</span>
+        <span class="amount gold">100 USDT</span>
+      </div>
+      <div class="ref-row">
+        <span class="who" style="color:var(--gray);font-size:12px;">* กรณีสมาชิกไม่มีผู้แนะนำ → Commission คงอยู่ใน TCC Fund</span>
+        <span></span>
+      </div>
+    </div>
+
+    <div class="ref-code-box fade-up">
+      <div>
+        <div class="ref-code-label">Referral Code ของคุณ</div>
+        <div class="ref-code-value" id="refCode">TCC-A8X2K9</div>
+      </div>
+      <div class="ref-code-actions">
+        <button class="ref-btn" onclick="copyCode()">คัดลอก</button>
+        <button class="ref-btn" onclick="shareLink()">แชร์ลิงก์</button>
+        <button class="ref-btn" style="color:var(--purple);border-color:rgba(139,92,246,0.3);">QR Code</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- WALLET -->
+  <section class="section fade-up" id="wallet">
+    <div class="section-header green">
+      <div>
+        <div class="section-title green">ระบบ Wallet & ความปลอดภัย</div>
+        <div class="section-sub">ฝาก-ถอน USDT สไตล์ Binance · ปลอดภัยด้วย Blockchain Technology</div>
+      </div>
+    </div>
+
+    <div class="wallet-grid">
+      <div class="wallet-card green">
+        <div class="wallet-top">
+          <div class="wallet-dot" style="background:var(--green);"></div>
+          <div class="wallet-name">Customer Wallet</div>
+        </div>
+        <div class="wallet-desc">รับ Funding Free + Commission + ถอนได้ทันที</div>
+        <div class="wallet-divider"></div>
+        <div class="wallet-address mono">Address: TXjk...9f2K  [TRC-20]</div>
+        <div class="wallet-balance-label">Balance</div>
+        <div class="wallet-balance-val green mono">1,250.00 USDT</div>
+        <div class="wallet-footer">ถอนได้ทันที หลังผ่าน 2FA Verify</div>
+      </div>
+      <div class="wallet-card gold">
+        <div class="wallet-top">
+          <div class="wallet-dot" style="background:var(--gold);"></div>
+          <div class="wallet-name">Seller Wallet</div>
+        </div>
+        <div class="wallet-desc">รับยอดขาย 45/60 วัน + ถอนได้ทันที</div>
+        <div class="wallet-divider"></div>
+        <div class="wallet-address mono">Address: TXab...3mN  [TRC-20]</div>
+        <div class="wallet-balance-label">Balance</div>
+        <div class="wallet-balance-val gold mono">3,600.00 USDT</div>
+        <div class="wallet-footer">ถอนได้ทันที หลังผ่าน 2FA Verify</div>
+      </div>
+      <div class="wallet-card purple">
+        <div class="wallet-top">
+          <div class="wallet-dot" style="background:var(--purple);"></div>
+          <div class="wallet-name">TCC Fund</div>
+        </div>
+        <div class="wallet-desc">จ่าย Funding Free + Referral Commission</div>
+        <div class="wallet-divider"></div>
+        <div class="wallet-address mono">System Wallet  [TRC-20]</div>
+        <div class="wallet-balance-label">Balance</div>
+        <div class="wallet-balance-val purple mono">48,200.00 USDT</div>
+        <div class="wallet-footer">รายได้ 40% จาก Trader Income</div>
+      </div>
+      <div class="wallet-card blue">
+        <div class="wallet-top">
+          <div class="wallet-dot" style="background:var(--blue);"></div>
+          <div class="wallet-name">TCC Market Fee</div>
+        </div>
+        <div class="wallet-desc">Fee 10% จากตัวเลือกผู้ขาย 45 วัน</div>
+        <div class="wallet-divider"></div>
+        <div class="wallet-address mono">System Wallet  [TRC-20]</div>
+        <div class="wallet-balance-label">Balance</div>
+        <div class="wallet-balance-val blue mono">2,100.00 USDT</div>
+        <div class="wallet-footer">บริหารโดย Admin เท่านั้น</div>
+      </div>
+    </div>
+
+    <!-- Deposit Flow -->
+    <div class="deposit-flow fade-up">
+      <div class="deposit-title">Flow ฝากเงิน (Binance-Style)</div>
+      <div class="flow-chips">
+        <span class="flow-chip-item green">External Wallet</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-chip-item gray">Network TRC20 / ERC20</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-chip-item gray">12 Confirmations</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-chip-item green">Customer Wallet ✓</span>
+      </div>
+    </div>
+
+    <!-- Security -->
+    <h3 style="margin-bottom:16px;color:var(--lgray);">ความปลอดภัยระดับสูง</h3>
+    <div class="security-grid fade-up">
+      <div class="security-item">
+        <div class="security-icon" style="background:var(--green);"></div>
+        <div>
+          <div class="security-feat">KYC Verification</div>
+          <div class="security-desc">ยืนยันตัวตนก่อนทุกธุรกรรม</div>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon" style="background:var(--gold);"></div>
+        <div>
+          <div class="security-feat">2FA Authentication</div>
+          <div class="security-desc">รหัส 2 ชั้นทุกการถอนเงิน</div>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon" style="background:var(--blue);"></div>
+        <div>
+          <div class="security-feat">Transaction History</div>
+          <div class="security-desc">บันทึกทุก TX ครบถ้วน</div>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon" style="background:var(--purple);"></div>
+        <div>
+          <div class="security-feat">Admin Approval</div>
+          <div class="security-desc">ทุกสินค้าผ่านการตรวจสอบ</div>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon" style="background:var(--green);"></div>
+        <div>
+          <div class="security-feat">Blockchain Verified</div>
+          <div class="security-desc">TxHash ตรวจสอบได้ On-chain</div>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon" style="background:var(--red);"></div>
+        <div>
+          <div class="security-feat">Encrypted Wallets</div>
+          <div class="security-desc">Private Key เข้ารหัสทุกชั้น</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="fade-up" id="cta">
+    <div class="cta-section">
+      <div class="cta-title">เริ่มต้นกับ TCC Marketplace วันนี้</div>
+      <p class="cta-sub">สมัครฟรี · ฝาก USDT · รับเงินคืนสูงสุด 100% · สร้างรายได้จาก Referral</p>
+      <div class="cta-steps">
+        <div class="cta-step">
+          <div class="cta-num">1</div>
+          <div class="cta-step-title">สมัครสมาชิก</div>
+          <div class="cta-step-sub">ฟรี ไม่มีค่าใช้จ่าย</div>
+        </div>
+        <div class="cta-step">
+          <div class="cta-num">2</div>
+          <div class="cta-step-title">ผ่าน KYC Verify</div>
+          <div class="cta-step-sub">ยืนยันตัวตนง่ายๆ</div>
+        </div>
+        <div class="cta-step">
+          <div class="cta-num">3</div>
+          <div class="cta-step-title">ฝาก USDT & ซื้อ</div>
+          <div class="cta-step-sub">รับ Funding Free ทันที</div>
+        </div>
+      </div>
+      <a href="https://tradercafeclubthai.tradercafeclub.workers.dev/#register" target="_blank" class="cta-btn">สมัครสมาชิกฟรี →</a>
+    </div>
+  </section>
+
+</div><!-- end .page -->
+
+<footer>
+  <strong>TCC Marketplace</strong> · ธุรกรรมทั้งหมดเป็น USDT · ขับเคลื่อนด้วย Blockchain Technology<br>
+  <span style="margin-top:6px;display:inline-block;">© 2025 TCC Marketplace. All Rights Reserved.</span>
+</footer>
+
+<script>
+// Intersection Observer for fade-up animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-up').forEach((el) => {
+  observer.observe(el);
+});
+
+// Copy referral code
+function copyCode() {
+  const code = document.getElementById('refCode').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = event.target;
+    btn.textContent = 'คัดลอกแล้ว ✓';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'rgba(14,203,129,0.4)';
+    setTimeout(() => {
+      btn.textContent = 'คัดลอก';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 2000);
+  });
+}
+
+// Share link
+function shareLink() {
+  const code = document.getElementById('refCode').textContent;
+  const url = `https://tccmarket.com/register?ref=${code}`;
+  if (navigator.share) {
+    navigator.share({ title: 'TCC Marketplace', url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = event.target;
+      btn.textContent = 'คัดลอกลิงก์แล้ว ✓';
+      setTimeout(() => btn.textContent = 'แชร์ลิงก์', 2000);
+    });
+  }
+}
+</script>
+</body>
+</html>
